@@ -4,3 +4,4 @@ aquavigil.db
 venv/
 .venv/
 *.log
+node_modules

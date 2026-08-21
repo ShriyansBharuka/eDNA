@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-abyss-950 text-slate-100 font-body antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(125, 211, 252, 0.25);
+  border-radius: 999px;
+}
+
+/* ---- Glass panel base + hover glow, shared by every section/card ---- */
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+}
+
+.glass-hover:hover {
+  transform: scale(1.025);
+  border-color: rgba(125, 211, 252, 0.55);
+  box-shadow: 0 0 32px rgba(56, 189, 248, 0.28), 0 0 0 1px rgba(125, 211, 252, 0.3) inset;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Varied section/card silhouettes — never a plain rectangle everywhere ---- */
+.shape-blob-a {
+  border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+}
+.shape-blob-b {
+  border-radius: 63% 37% 30% 70% / 50% 45% 55% 50%;
+}
+.shape-blob-c {
+  border-radius: 34% 66% 52% 48% / 60% 38% 62% 40%;
+}
+.shape-hex {
+  clip-path: polygon(24% 4%, 76% 4%, 100% 50%, 76% 96%, 24% 96%, 0% 50%);
+}
+.shape-wave {
+  clip-path: polygon(0 0, 100% 0, 100% 94%, 75% 100%, 50% 94%, 25% 100%, 0 94%);
+}
+.shape-angled {
+  clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%);
+}
+.shape-round {
+  border-radius: 28px;
+}
+
+/* Radius fallback so clipped/blobbed shapes still resolve to a sane box on
+   very small screens where the silhouette would otherwise crop content. */
+@media (max-width: 480px) {
+  .shape-blob-a,
+  .shape-blob-b,
+  .shape-blob-c,
+  .shape-hex,
+  .shape-wave,
+  .shape-angled {
+    border-radius: 24px;
+    clip-path: none;
+  }
+}
+
+.text-glow {
+  text-shadow: 0 0 24px rgba(125, 211, 252, 0.45);
+}
