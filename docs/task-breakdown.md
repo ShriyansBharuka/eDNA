@@ -25,11 +25,11 @@ At the end there's a proposed task-to-person split across your 6 team members.
 
 **Tasks:**
 - [ ] Clone the OceanOmics-AmpliconReference repository, extract the marker-gene FASTA files [DNA sequence files] you'll actually use.
-- [ ] Set up `nf-core/readsimulator` (needs Nextflow [a pipeline-running tool] + Docker or Singularity [software-packaging tools]) to generate simulated eDNA reads with known correct answers.
+- [x] Run `scripts/simulate_reads.py` to generate simulated eDNA reads with known correct answers — replaces the originally-planned `nf-core/readsimulator` (Nextflow), which was evaluated and skipped for this build's timeline.
 - [ ] Decide the dataset's scope — how many species, which of the 3 marker genes — this is a decision point, not just a task (see the earlier dataset discussion).
 - [ ] Write a small script converting the reference + simulated data into whatever format the Classification Engine expects (a clean, labeled training set).
 
-**Tools/libraries required:** Nextflow, Docker or Singularity, Python, git.
+**Tools/libraries required:** Python, git. (No longer Nextflow/Docker/Singularity — see the note above.)
 
 **Skills needed:** Comfortable with the command line; no deep bioinformatics background required — mostly following documented setup steps.
 

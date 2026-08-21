@@ -25,7 +25,7 @@
 
 | Person | This week |
 |---|---|
-| Shriyans | Repo setup. Clone OceanOmics-AmpliconReference. Get `nf-core/readsimulator` running (Nextflow + Docker installed and working). Define the database schema (`samples`, `detections`, `species_cache`, `conservation_status`) and the API contract [the agreed shape of every endpoint's request/response — frozen early so others can build against it without waiting]. Stub out the API routes so they return placeholder JSON matching that contract. |
+| Shriyans | Repo setup. Clone OceanOmics-AmpliconReference. Run the custom Python read simulator (`scripts/simulate_reads.py` — Nextflow/`nf-core/readsimulator` was evaluated and skipped for this build; see the note at the bottom of this doc). Define the database schema (`samples`, `detections`, `species_cache`, `conservation_status`) and the API contract [the agreed shape of every endpoint's request/response — frozen early so others can build against it without waiting]. Stub out the API routes so they return placeholder JSON matching that contract. |
 | Sunanda (backend specialist) | Work with Shriyans to finalize the API contract. Containerize [package with Docker] the 2–3 chosen classical classifier tools, confirm each runs standalone on a test sequence. |
 | Darshan (DL/RL specialist) | Set up Python 3.11/3.12, PyTorch, `transformers`. Load BarcodeBERT, confirm it produces an embedding for a test DNA sequence — the "does it even work" milestone. |
 | Aarya (Transformers/GNNs specialist) | Same environment setup, working alongside Darshan. Start prototyping the custom self-attention + BiLSTM head architecture on dummy data — doesn't need real data yet, just needs to run. |
@@ -40,7 +40,7 @@
 
 | Person | This week |
 |---|---|
-| Shriyans | Finish generating the simulated training dataset via `nf-core/readsimulator` — real reads with known species labels attached. **Hands this off** to the Darshan + Aarya and to the Sunanda (backend specialist). |
+| Shriyans | Finish generating the simulated training dataset via `scripts/simulate_reads.py` — real reads with known species labels attached, in `simulated_data/manifest.csv`. **Hands this off** to Darshan + Aarya and to Sunanda (backend specialist). |
 | Sunanda (backend specialist) | Build the ensemble router (marker gene → preferred classical tool) and consensus voting logic. Test it against Shriyans's real simulated dataset. |
 | Darshan + Aarya | Train the custom head on Shriyans's real labeled dataset. Evaluate accuracy on held-out data. |
 | Leena (frontend specialist) | Continue building the dashboard against mocks. Start the Geographic Map (GBIF integration) — this track has no dependency on anyone else's work, good use of otherwise-blocked time. |
@@ -120,3 +120,7 @@ This is the part that answers "how does everything actually connect": each arrow
 ## 3. What's still a genuine blocker
 
 Components 1 (Data Layer) and 3 (BarcodeBERT + custom head) remain the two pieces everything else depends on, unchanged from the earlier breakdown. Everything in this roadmap is sequenced around getting those two moving first in Phase 1–2, specifically so their outputs are ready before Phase 3's integration work needs them.
+
+## 4. Note on a scope change from the original plan
+
+Nextflow + `nf-core/readsimulator` (the tool originally planned for generating simulated training reads) was evaluated and deliberately skipped for this build, given the timeline. `scripts/simulate_reads.py` — a custom, tested, much simpler Python script — replaces it. Same core purpose (fragment real reference sequences, add realistic sequencing error, produce reads with known ground truth), simpler error model. Worth knowing if this comes up in the pitch: be upfront that it's a custom lightweight simulator inspired by the same approach as the research paper, not literally the paper's own tooling.
