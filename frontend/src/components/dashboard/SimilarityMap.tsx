@@ -99,7 +99,7 @@ export default function SimilarityMap() {
   }, [selectedSpecies]);
 
   return (
-    <section id="similarity" className="scroll-mt-28">
+    <section id="similarity" className="scroll-mt-28 w-full max-w-[80vw] mx-auto">
       <div className="flex items-baseline justify-between mb-6">
         <h3 className="font-display text-2xl font-semibold text-glow">Genetic Similarity Map</h3>
         <span className="text-xs text-slate-500">Mock projection — pending Aarya's UMAP/GNN endpoint</span>

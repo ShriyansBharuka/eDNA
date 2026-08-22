@@ -9,15 +9,15 @@ export interface IucnCategory {
 }
 
 export const IUCN_CATEGORIES: IucnCategory[] = [
-  { code: "EX", label: "Extinct", description: "No known individuals remaining.", color: "#4b5563" },
-  { code: "EW", label: "Extinct in the Wild", description: "Survives only in captivity or outside its historic range.", color: "#6b7280" },
-  { code: "CR", label: "Critically Endangered", description: "Extremely high risk of extinction in the wild.", color: "#f87171" },
-  { code: "EN", label: "Endangered", description: "Very high risk of extinction in the wild.", color: "#fb923c" },
-  { code: "VU", label: "Vulnerable", description: "High risk of extinction in the wild.", color: "#fbbf24" },
-  { code: "NT", label: "Near Threatened", description: "Likely to qualify for a threatened category soon.", color: "#a3e635" },
-  { code: "LC", label: "Least Concern", description: "Widespread and abundant; lowest risk.", color: "#4ade80" },
-  { code: "DD", label: "Data Deficient", description: "Not enough data to assess extinction risk.", color: "#94a3b8" },
-  { code: "NE", label: "Not Evaluated", description: "Has not yet been assessed against the criteria.", color: "#64748b" },
+  { code: "EX", label: "Extinct", description: "No known individuals remaining in existence.", color: "#e11d48" },
+  { code: "EW", label: "Extinct in the Wild", description: "Survives only in captivity or cultivation.", color: "#c026d3" },
+  { code: "CR", label: "Critically Endangered", description: "Extremely high risk of extinction in the wild.", color: "#f43f5e" },
+  { code: "EN", label: "Endangered", description: "Very high risk of extinction in the wild.", color: "#f97316" },
+  { code: "VU", label: "Vulnerable", description: "High risk of extinction in the wild.", color: "#eab308" },
+  { code: "NT", label: "Near Threatened", description: "Likely to qualify for a threatened category soon.", color: "#84cc16" },
+  { code: "LC", label: "Least Concern", description: "Widespread and abundant; lowest extinction risk.", color: "#22c55e" },
+  { code: "DD", label: "Data Deficient", description: "Inadequate information to assess extinction risk.", color: "#06b6d4" },
+  { code: "NE", label: "Not Evaluated", description: "Has not yet been assessed against criteria.", color: "#94a3b8" },
 ];
 
 const ALIASES: Record<string, string> = {

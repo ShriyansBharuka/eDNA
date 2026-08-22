@@ -117,7 +117,7 @@ export default function GeographicMap() {
   }, [mapFocus]);
 
   return (
-    <section id="distribution" className="scroll-mt-28">
+    <section id="distribution" className="scroll-mt-28 w-full max-w-[80vw] mx-auto">
       <h3 className="font-display text-2xl font-semibold text-glow mb-6">Geographic Distribution</h3>
       <GlassPanel shape="round" hover={false} className="p-4 md:p-6">
         {!selectedSpecies && (

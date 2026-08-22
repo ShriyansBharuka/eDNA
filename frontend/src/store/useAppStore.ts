@@ -19,8 +19,11 @@ interface AppState {
 
   authOpen: boolean;
   iucnOpen: boolean;
+  endangeredOpen: boolean;
   setAuthOpen: (open: boolean) => void;
   setIucnOpen: (open: boolean) => void;
+  setEndangeredOpen: (open: boolean) => void;
+  removeDetection: (speciesName: string) => void;
 }
 
 export interface MapFocus {
@@ -46,6 +49,14 @@ export const useAppStore = create<AppState>((set) => ({
 
   authOpen: false,
   iucnOpen: false,
+  endangeredOpen: false,
   setAuthOpen: (open) => set({ authOpen: open }),
   setIucnOpen: (open) => set({ iucnOpen: open }),
+  setEndangeredOpen: (open) => set({ endangeredOpen: open }),
+
+  removeDetection: (speciesName) =>
+    set((state) => ({
+      detections: state.detections.filter((d) => d.species.toLowerCase() !== speciesName.toLowerCase()),
+      selectedSpecies: state.selectedSpecies?.toLowerCase() === speciesName.toLowerCase() ? null : state.selectedSpecies,
+    })),
 }));

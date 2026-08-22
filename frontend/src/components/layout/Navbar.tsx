@@ -5,6 +5,7 @@ export default function Navbar() {
   const heroDone = useAppStore((s) => s.heroDone);
   const setAuthOpen = useAppStore((s) => s.setAuthOpen);
   const setIucnOpen = useAppStore((s) => s.setIucnOpen);
+  const setEndangeredOpen = useAppStore((s) => s.setEndangeredOpen);
 
   return (
     // Always mounted (never conditionally added/removed via AnimatePresence):
@@ -24,7 +25,7 @@ export default function Navbar() {
           Gravity Falls
         </a>
 
-        <div className="hidden items-center gap-5 text-sm text-slate-300 lg:flex">
+        <div className="hidden items-center gap-4 text-sm text-slate-300 lg:flex">
           <a href="#assessment" className="glass-hover rounded-full px-3 py-1.5 transition-colors hover:text-glow-400">
             Biodiversity Assessment
           </a>
@@ -37,6 +38,13 @@ export default function Navbar() {
           >
             Distribution Map
           </a>
+          <button
+            onClick={() => setEndangeredOpen(true)}
+            className="glass-hover rounded-full px-3 py-1.5 font-medium text-amber-300 hover:text-amber-200 transition-colors flex items-center gap-1.5"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+            Endangered Species
+          </button>
           <button
             onClick={() => setIucnOpen(true)}
             className="glass-hover rounded-full px-3 py-1.5 transition-colors hover:text-glow-400"

@@ -8,9 +8,13 @@ import GeographicMap from "./components/dashboard/GeographicMap";
 import SimilarityMap from "./components/dashboard/SimilarityMap";
 import DiscoveredReads from "./components/dashboard/DiscoveredReads";
 import FloatingCreatures from "./components/decor/FloatingCreatures";
+import RisingBubbles from "./components/decor/RisingBubbles";
+import JellyfishLayer from "./components/decor/JellyfishLayer";
+import DeepSeaCreature from "./components/decor/DeepSeaCreature";
 import Credits from "./components/layout/Credits";
 import AuthModal from "./components/modals/AuthModal";
 import IucnDrawer from "./components/modals/IucnDrawer";
+import EndangeredModal from "./components/modals/EndangeredModal";
 import { getIndices, getResults } from "./api/client";
 import { useAppStore } from "./store/useAppStore";
 
@@ -56,9 +60,18 @@ export default function App() {
           <div className="absolute top-[78%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-cyan-950/30 rounded-full blur-[160px]" />
         </div>
 
+        {/* Ambient Deep-Sea Rising Air Bubbles */}
+        <RisingBubbles />
+
+        {/* Hydrodynamically Accurate Translucent Jellyfish Layer */}
+        <JellyfishLayer />
+
+        {/* Deep-Sea Cruising Sea Turtle */}
+        <DeepSeaCreature />
+
         {/* <FloatingCreatures /> */}
 
-        <main className="relative z-10 mx-auto max-w-6xl px-6 pb-24 pt-20 flex flex-col gap-24">
+        <main className="relative z-10 mx-auto max-w-6xl px-6 pb-16 pt-16 flex flex-col gap-12 sm:gap-14">
           <section id="species" className="scroll-mt-28">
             <SpeciesList />
           </section>
@@ -73,6 +86,7 @@ export default function App() {
 
       <AuthModal />
       <IucnDrawer />
+      <EndangeredModal />
     </div>
   );
 }
