@@ -1,0 +1,36 @@
+{
+  "model_name": "kmer_embedding_classifier",
+  "source_experiment": "exp05_mean_k6_overlap",
+  "dataset": "synthetic eDNA simulated_data split",
+  "split": {
+    "train_samples": 161889,
+    "validation_samples": 20282,
+    "test_samples": 20229,
+    "classes": 500,
+    "exact_sequence_overlap_between_splits": 0,
+    "read_id_overlap_between_splits": 0
+  },
+  "training": {
+    "epochs_run": 38,
+    "best_epoch": 32,
+    "training_duration_seconds": 342.48751950263977,
+    "device": "CPU"
+  },
+  "validation": {
+    "loss": 0.33568177968263624,
+    "accuracy": 0.9892515531012721,
+    "macro_f1": 0.9916974361564841,
+    "weighted_f1": 0.9892828165873074,
+    "macro_precision": 0.9918700908952631,
+    "macro_recall": 0.9918056819097114
+  },
+  "test": {
+    "loss": 0.33489146307110784,
+    "accuracy": 0.9885313164269118,
+    "macro_f1": 0.9910618423051824,
+    "weighted_f1": 0.988557458729641,
+    "macro_precision": 0.9912115942953262,
+    "macro_recall": 0.9910749149203996
+  }
+}
+
