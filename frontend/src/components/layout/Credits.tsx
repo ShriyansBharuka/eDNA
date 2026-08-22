@@ -77,9 +77,29 @@ const DATA_SOURCES: { name: string; url: string; note: string }[] = [
 
 export default function Credits() {
   return (
-    <footer className="border-t border-white/5 px-6 py-12">
-      <div className="mx-auto max-w-5xl">
-        <h4 className="mb-5 text-[11px] uppercase tracking-[0.28em] text-slate-500">Data sources</h4>
+    <footer className="relative w-full overflow-hidden pt-24 pb-16">
+      {/* Background Layer: Seamless Full-View Ocean Floor & Shipwreck */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {/* Smooth Top Gradient Blend: Seamlessly dissolves out of the dark abyssal background above */}
+        <div className="absolute inset-x-0 top-0 z-10 h-44 bg-gradient-to-b from-abyss-950 via-abyss-950/75 to-transparent" />
+
+        {/* Full Shipwreck & Coral Ocean Floor Artwork */}
+        <img
+          src="/creatures/full_shipwreck_floor.png"
+          alt="Full aesthetic submerged shipwreck resting on coral ocean floor"
+          className="h-full w-full object-cover object-bottom opacity-85 filter contrast-110 saturate-125"
+          loading="lazy"
+        />
+
+        {/* Soft Vignette Overlay: Keeps text and data cards perfectly legible while showing the full ship */}
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-abyss-950/90 via-abyss-950/40 to-transparent" />
+      </div>
+
+      {/* Footer Content Layer */}
+      <div className="relative z-10 mx-auto max-w-5xl px-6">
+        <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300/90 text-glow">
+          Data sources &amp; Infrastructure
+        </h4>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {DATA_SOURCES.map((s) => (
             <a
@@ -87,32 +107,32 @@ export default function Credits() {
               href={s.url}
               target="_blank"
               rel="noreferrer"
-              className="glass glass-hover shape-round block px-4 py-3.5"
+              className="glass glass-hover shape-round block px-4 py-3.5 backdrop-blur-md bg-abyss-950/65 border-white/15 shadow-[0_8px_24px_rgba(0,0,0,0.6)]"
             >
-              <span className="flex items-center gap-1.5 text-sm font-medium" style={{ color: "#7dd3fc" }}>
+              <span className="flex items-center gap-1.5 text-sm font-medium text-sky-300">
                 {s.name}
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 17L17 7M17 7H8M17 7v9" />
                 </svg>
               </span>
-              <span className="mt-1 block text-[11px] leading-snug text-slate-500">{s.note}</span>
+              <span className="mt-1 block text-[11px] leading-snug text-slate-300">{s.note}</span>
             </a>
           ))}
         </div>
-      </div>
 
-      <p className="mx-auto mt-10 max-w-3xl text-center text-[11px] leading-relaxed text-slate-600">
-        Marine-life &amp; wreck photography (cropped, background removed) via Wikimedia Commons:{" "}
-        {CREDITS.map((c, i) => (
-          <span key={c.name}>
-            <a href={c.url} target="_blank" rel="noreferrer" className="underline decoration-slate-700 hover:text-slate-400">
-              {c.name}
-            </a>{" "}
-            &copy; {c.author} ({c.license})
-            {i < CREDITS.length - 1 ? ", " : "."}
-          </span>
-        ))}
-      </p>
+        <p className="mt-12 max-w-3xl text-center text-[11px] leading-relaxed text-slate-300/90 mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          Marine-life &amp; wreck imagery via Wikimedia Commons:{" "}
+          {CREDITS.map((c, i) => (
+            <span key={c.name}>
+              <a href={c.url} target="_blank" rel="noreferrer" className="underline decoration-slate-500 hover:text-cyan-300">
+                {c.name}
+              </a>{" "}
+              &copy; {c.author} ({c.license})
+              {i < CREDITS.length - 1 ? ", " : "."}
+            </span>
+          ))}
+        </p>
+      </div>
     </footer>
   );
 }
