@@ -1,34 +1,63 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+import { getSimilarity } from "../../api/client";
+import type { SimilarityResponse } from "../../api/types";
 import { useAppStore } from "../../store/useAppStore";
 import GlassPanel from "../ui/GlassPanel";
-import { MOCK_SIMILARITY_EDGES, MOCK_SIMILARITY_NODES } from "../../lib/mockSimilarity";
 
 interface SimNode extends d3.SimulationNodeDatum {
   id: string;
-  isUnknown?: boolean;
-  highlighted?: boolean;
+  isSelected?: boolean;
 }
 interface SimLink extends d3.SimulationLinkDatum<SimNode> {
-  distance: number;
+  similarity: number;
 }
 
 export default function SimilarityMap() {
   const svgRef = useRef<SVGSVGElement>(null);
   const selectedSpecies = useAppStore((s) => s.selectedSpecies);
+  const [data, setData] = useState<SimilarityResponse | null>(null);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!selectedSpecies) {
+      setData(null);
+      setNotFound(false);
+      return;
+    }
+    let cancelled = false;
+    setNotFound(false);
+    getSimilarity(selectedSpecies)
+      .then((res) => {
+        if (!cancelled) setData(res);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setData(null);
+          setNotFound(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSpecies]);
 
   useEffect(() => {
     const svgEl = svgRef.current;
-    if (!svgEl) return;
+    if (!svgEl || !data) return;
 
     const width = svgEl.clientWidth || 640;
     const height = 420;
 
-    const nodes: SimNode[] = MOCK_SIMILARITY_NODES.map((n) => ({
-      ...n,
-      highlighted: n.id === selectedSpecies,
+    const nodes: SimNode[] = [
+      { id: data.species, isSelected: true },
+      ...data.neighbors.map((n) => ({ id: n.species })),
+    ];
+    const links: SimLink[] = data.neighbors.map((n) => ({
+      source: data.species,
+      target: n.species,
+      similarity: n.similarity,
     }));
-    const links: SimLink[] = MOCK_SIMILARITY_EDGES.map((e) => ({ ...e }));
 
     const svg = d3.select(svgEl);
     svg.selectAll("*").remove();
@@ -41,7 +70,9 @@ export default function SimilarityMap() {
         d3
           .forceLink<SimNode, SimLink>(links)
           .id((d) => d.id)
-          .distance((l) => 60 + l.distance * 220)
+          // Higher similarity = shorter edge, mirroring the mock's old feel
+          // but now driven by a real cosine-similarity value (0-1).
+          .distance((l) => 60 + (1 - l.similarity) * 220)
       )
       .force("charge", d3.forceManyBody().strength(-260))
       .force("center", d3.forceCenter(width / 2, height / 2))
@@ -53,8 +84,8 @@ export default function SimilarityMap() {
       .data(links)
       .join("line")
       .attr("stroke", "#7dd3fc")
-      .attr("stroke-opacity", (d) => 0.15 + (1 - d.distance) * 0.4)
-      .attr("stroke-width", (d) => Math.max(1, (1 - d.distance) * 4));
+      .attr("stroke-opacity", (d) => 0.15 + d.similarity * 0.4)
+      .attr("stroke-width", (d) => Math.max(1, d.similarity * 4));
 
     const node = svg
       .append("g")
@@ -65,13 +96,13 @@ export default function SimilarityMap() {
 
     node
       .append("circle")
-      .attr("r", (d) => (d.isUnknown ? 16 : d.highlighted ? 14 : 10))
-      .attr("fill", (d) => (d.isUnknown ? "#f472b6" : d.highlighted ? "#5eead4" : "#38bdf8"))
+      .attr("r", (d) => (d.isSelected ? 16 : 10))
+      .attr("fill", (d) => (d.isSelected ? "#f472b6" : "#38bdf8"))
       .attr("fill-opacity", 0.85)
       .attr("stroke", "white")
       .attr("stroke-opacity", 0.6)
       .attr("stroke-width", 1)
-      .style("filter", (d) => (d.isUnknown || d.highlighted ? "drop-shadow(0 0 8px rgba(125,211,252,0.8))" : "none"));
+      .style("filter", (d) => (d.isSelected ? "drop-shadow(0 0 8px rgba(125,211,252,0.8))" : "none"));
 
     node
       .append("text")
@@ -96,18 +127,28 @@ export default function SimilarityMap() {
     return () => {
       simulation.stop();
     };
-  }, [selectedSpecies]);
+  }, [data]);
 
   return (
     <section id="similarity" className="scroll-mt-28 w-full max-w-[80vw] mx-auto">
       <div className="flex items-baseline justify-between mb-6">
         <h3 className="font-display text-2xl font-semibold text-glow">Genetic Similarity Map</h3>
-        <span className="text-xs text-slate-500">Mock projection — pending Aarya's UMAP/GNN endpoint</span>
+        <span className="text-xs text-slate-500">Real UMAP + cosine-similarity graph, 500-species reference space</span>
       </div>
       <GlassPanel shape="wave" hover={false} className="p-4 md:p-6">
+        {!selectedSpecies && (
+          <p className="text-slate-400 text-sm mb-4">
+            Select a species from the list above to see its nearest relatives in the learned embedding space.
+          </p>
+        )}
+        {notFound && (
+          <p className="text-slate-400 text-sm mb-4">No similarity data for this species yet.</p>
+        )}
         <svg ref={svgRef} className="w-full" style={{ height: 420 }} />
         <p className="mt-3 text-xs text-slate-400">
-          Node distance reflects genetic closeness, not physical location — separate from the map above.
+          Node distance reflects genetic closeness, not physical location — separate from the map above. The 2D
+          layout (UMAP) preserves local neighborhoods better than absolute distance; edge thickness is the real
+          similarity score.
         </p>
       </GlassPanel>
     </section>

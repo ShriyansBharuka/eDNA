@@ -95,6 +95,13 @@ export default function ScrollVideoHero() {
           <span className="h-1.5 w-1.5 rounded-full bg-glow-400 animate-drift" />
         </span>
       </div>
+
+      {/* SIH Logo - Shifted Slightly Right */}
+      <img
+        src="/SIH-logo.png"
+        alt="Smart India Hackathon Logo"
+        className="absolute bottom-14 sm:bottom-16 right-24 sm:right-36 z-20 h-[68px] md:h-[86px] w-auto pointer-events-none object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]"
+      />
     </section>
   );
 }

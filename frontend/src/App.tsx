@@ -69,6 +69,23 @@ export default function App() {
         {/* Deep-Sea Cruising Sea Turtle */}
         <DeepSeaCreature />
 
+        {/* Full Uncut Dark Sunken Shipwreck Background Layer (Spans lower dashboard & footer at z-0) */}
+        <div aria-hidden className="pointer-events-none absolute bottom-0 inset-x-0 z-0 h-[1100px] md:h-[1350px] overflow-hidden">
+          {/* Smooth Top Gradient Blend: Seamlessly dissolves out of the dark abyssal background above */}
+          <div className="absolute inset-x-0 top-0 z-10 h-48 bg-gradient-to-b from-abyss-950 via-abyss-950/80 to-transparent" />
+
+          {/* Cinematic Dark Sunken Shipwreck Artwork - Full Uncut View */}
+          <img
+            src="/creatures/dark_sunken_shipwreck_footer.png"
+            alt="Cinematic dark sunken shipwreck on deep ocean floor"
+            className="h-full w-full object-cover object-bottom opacity-85 filter contrast-110 saturate-110"
+            loading="lazy"
+          />
+
+          {/* Soft Vignette Overlay: Ensures cards & maps remain 100% crisp and readable */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-abyss-950/90 via-abyss-950/30 to-transparent" />
+        </div>
+
         {/* <FloatingCreatures /> */}
 
         <main className="relative z-20 mx-auto max-w-6xl px-6 pb-16 pt-6 flex flex-col gap-10 sm:gap-12">

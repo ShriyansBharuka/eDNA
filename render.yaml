@@ -1,0 +1,14 @@
+# Render "Blueprint" — lets the backend be deployed with one click via
+# Render's "New > Blueprint" flow instead of manually configuring a Web
+# Service through the dashboard. Root repo location on purpose: Render reads
+# blueprints from the repo root, even though the service itself only builds
+# out of backend/.
+services:
+  - type: web
+    name: aquavigil-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /docs

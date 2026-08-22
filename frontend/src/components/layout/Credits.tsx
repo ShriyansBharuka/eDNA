@@ -74,24 +74,7 @@ const DATA_SOURCES: { name: string; url: string; note: string }[] = [
 
 export default function Credits() {
   return (
-    <footer className="relative w-full overflow-hidden pt-20 pb-14">
-      {/* Background Layer: Exact User Reference Coral Reef & Sandy Ocean Floor */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        {/* Smooth Top Gradient Blend: Seamlessly dissolves out of the dark abyssal background above */}
-        <div className="absolute inset-x-0 top-0 z-10 h-36 bg-gradient-to-b from-abyss-950 via-abyss-950/70 to-transparent" />
-
-        {/* User Reference Front-View Coral Reef & Sandy Seafloor Artwork */}
-        <img
-          src="/creatures/user_reference_ocean_floor.jpg"
-          alt="Front view of sandy ocean floor with vibrant corals"
-          className="h-full w-full object-cover object-bottom opacity-90 filter contrast-110 saturate-125"
-          loading="lazy"
-        />
-
-        {/* Soft Vignette Overlay: Ensures data cards and text are 100% crisp and readable */}
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-abyss-950/90 via-abyss-950/40 to-transparent" />
-      </div>
-
+    <footer className="relative w-full pt-16 pb-14">
       {/* Footer Content Layer */}
       <div className="relative z-10 mx-auto max-w-5xl px-6">
         <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300/90 text-glow">

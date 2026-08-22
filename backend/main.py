@@ -4,6 +4,7 @@ import sqlite3
 from collections import Counter, defaultdict
 
 from fastapi import FastAPI, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "data", "component_6"))
 sys.path.append(os.path.dirname(__file__))
@@ -11,8 +12,20 @@ from conservation_flag import flag_species
 from biodiversity_indices import calculate_all_indices
 from classifier import classify_reads
 from reads_io import parse_reads
+from similarity import get_similarity
 
-app = FastAPI(title="AquaVigil API", version="0.3.0")
+app = FastAPI(title="AquaVigil API", version="0.4.0")
+
+# Hosted frontend (Vercel) and backend (Render) live on different origins.
+# No cookies/session credentials are used anywhere in this API, so a fully
+# open CORS policy is the safe, standard choice here — it also means preview
+# deploy URLs (which change per-branch on Vercel) work with no extra config.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 DB_PATH = os.path.join(os.path.dirname(__file__), "aquavigil.db")
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 SEED_FASTQ_PATH = os.path.join(os.path.dirname(__file__), "..", "simulated_data", "simulated_reads.fastq")
@@ -215,3 +228,15 @@ async def get_conservation_status(species_name: str):
         "is_flagged": flag_result["is_flagged"],
         "flag_reason": flag_result["flag_reason"],
     }
+
+
+@app.get("/species/{species_name}/similarity")
+async def get_species_similarity(species_name: str):
+    """Genetic similarity map (component 7) — real UMAP position + real
+    nearest neighbors by cosine similarity, from the precomputed reference
+    map in models/kmer_embedding_classifier/. Not a live per-read embedding
+    (see backend/similarity.py's module docstring)."""
+    result = get_similarity(species_name)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"'{species_name}' not found in the similarity map")
+    return result
