@@ -28,11 +28,21 @@ const sampleIcon = L.divIcon({
   iconAnchor: [8, 8],
 });
 
+// Marker for an unmatched read located from the Discovered section.
+const unmatchedIcon = L.divIcon({
+  className: "",
+  html: `<span style="display:block;width:20px;height:20px;border-radius:50%;background:rgba(244,114,182,0.25);border:2px solid #f472b6;box-shadow:0 0 18px 6px rgba(244,114,182,0.7)"></span>`,
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+});
+
 export default function GeographicMap() {
   const selectedSpecies = useAppStore((s) => s.selectedSpecies);
+  const mapFocus = useAppStore((s) => s.mapFocus);
   const mapElRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  const focusMarkerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
     if (!mapElRef.current || mapRef.current) return;
@@ -89,6 +99,22 @@ export default function GeographicMap() {
       cancelled = true;
     };
   }, [selectedSpecies]);
+
+  // "Locate on map" from the Discovered section: drop a highlighted marker on
+  // the unmatched read's collection point and fly to it.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapFocus) return;
+
+    focusMarkerRef.current?.remove();
+    const marker = L.marker([mapFocus.lat, mapFocus.lon], { icon: unmatchedIcon })
+      .bindPopup(`Unmatched read · ${mapFocus.label}`)
+      .addTo(map);
+    focusMarkerRef.current = marker;
+
+    map.flyTo([mapFocus.lat, mapFocus.lon], 7, { duration: 1.1 });
+    marker.openPopup();
+  }, [mapFocus]);
 
   return (
     <section id="distribution" className="scroll-mt-28">

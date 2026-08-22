@@ -3,7 +3,6 @@ import { useAppStore } from "../../store/useAppStore";
 
 export default function Navbar() {
   const heroDone = useAppStore((s) => s.heroDone);
-  const setUploadOpen = useAppStore((s) => s.setUploadOpen);
   const setAuthOpen = useAppStore((s) => s.setAuthOpen);
   const setIucnOpen = useAppStore((s) => s.setIucnOpen);
 
@@ -22,12 +21,15 @@ export default function Navbar() {
     >
       <nav className="glass shape-round mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
         <a href="#top" className="font-display font-semibold tracking-tight text-glow shrink-0">
-          AquaVigil
+          Gravity Falls
         </a>
 
-        <div className="hidden md:flex items-center gap-6 text-sm text-slate-300">
-          <a href="#indices" className="glass-hover rounded-full px-3 py-1.5 transition-colors hover:text-glow-400">
-            Indices
+        <div className="hidden items-center gap-5 text-sm text-slate-300 lg:flex">
+          <a href="#assessment" className="glass-hover rounded-full px-3 py-1.5 transition-colors hover:text-glow-400">
+            Biodiversity Assessment
+          </a>
+          <a href="#discovered" className="glass-hover rounded-full px-3 py-1.5 transition-colors hover:text-glow-400">
+            Discovered
           </a>
           <a
             href="#distribution"
@@ -44,13 +46,13 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => setUploadOpen(true)}
-            className="glass glass-hover rounded-full border-glow-500/40 px-4 py-1.5 text-sm font-medium text-glow-400"
-            style={{ color: "#7dd3fc" }}
+          <a
+            href="#upload"
+            className="glass glass-hover rounded-full px-4 py-1.5 text-sm font-medium"
+            style={{ color: "#7dd3fc", borderColor: "rgba(125,211,252,0.45)" }}
           >
             Upload Sample
-          </button>
+          </a>
           <button
             onClick={() => setAuthOpen(true)}
             className="glass glass-hover rounded-full px-4 py-1.5 text-sm font-medium text-slate-100"

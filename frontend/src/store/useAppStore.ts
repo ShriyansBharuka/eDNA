@@ -13,12 +13,20 @@ interface AppState {
   selectedSpecies: string | null;
   selectSpecies: (species: string | null) => void;
 
-  uploadOpen: boolean;
+  /** Set by "Locate on map" on an unmatched read, so the map can fly to it. */
+  mapFocus: MapFocus | null;
+  focusOnMap: (focus: MapFocus | null) => void;
+
   authOpen: boolean;
   iucnOpen: boolean;
-  setUploadOpen: (open: boolean) => void;
   setAuthOpen: (open: boolean) => void;
   setIucnOpen: (open: boolean) => void;
+}
+
+export interface MapFocus {
+  lat: number;
+  lon: number;
+  label: string;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -33,10 +41,11 @@ export const useAppStore = create<AppState>((set) => ({
   selectedSpecies: null,
   selectSpecies: (species) => set({ selectedSpecies: species }),
 
-  uploadOpen: false,
+  mapFocus: null,
+  focusOnMap: (focus) => set({ mapFocus: focus }),
+
   authOpen: false,
   iucnOpen: false,
-  setUploadOpen: (open) => set({ uploadOpen: open }),
   setAuthOpen: (open) => set({ authOpen: open }),
   setIucnOpen: (open) => set({ iucnOpen: open }),
 }));

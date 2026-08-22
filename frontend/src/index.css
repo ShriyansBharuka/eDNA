@@ -23,21 +23,40 @@ body {
 
 /* ---- Glass panel base + hover glow, shared by every section/card ---- */
 .glass {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+  position: relative;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.085) 0%,
+    rgba(255, 255, 255, 0.035) 45%,
+    rgba(125, 211, 252, 0.045) 100%
+  );
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.18);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms ease, border-color 260ms ease,
+    background 260ms ease;
 }
 
 .glass-hover:hover {
-  transform: scale(1.025);
-  border-color: rgba(125, 211, 252, 0.55);
-  box-shadow: 0 0 32px rgba(56, 189, 248, 0.28), 0 0 0 1px rgba(125, 211, 252, 0.3) inset;
-  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px) scale(1.02);
+  border-color: rgba(125, 211, 252, 0.6);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.5), 0 0 34px rgba(56, 189, 248, 0.32),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.05) 45%,
+    rgba(125, 211, 252, 0.08) 100%
+  );
 }
 
-/* ---- Varied section/card silhouettes — never a plain rectangle everywhere ---- */
+/* ---- Varied section/card silhouettes ----
+   All silhouettes are border-radius based, never clip-path: clip-path cuts
+   away the element's own border and box-shadow, which is what was eating the
+   glow on the hex-shaped Shannon Index card. Radii keep the shapes distinct
+   while letting every panel keep its glass border and hover glow. */
 .shape-blob-a {
   border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
 }
@@ -48,20 +67,19 @@ body {
   border-radius: 34% 66% 52% 48% / 60% 38% 62% 40%;
 }
 .shape-hex {
-  clip-path: polygon(24% 4%, 76% 4%, 100% 50%, 76% 96%, 24% 96%, 0% 50%);
+  border-radius: 34% 34% 34% 34% / 26% 26% 26% 26%;
 }
 .shape-wave {
-  clip-path: polygon(0 0, 100% 0, 100% 94%, 75% 100%, 50% 94%, 25% 100%, 0 94%);
+  border-radius: 28px 28px 64px 64px / 28px 28px 40px 40px;
 }
 .shape-angled {
-  clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%);
+  border-radius: 8px 40px 8px 40px;
 }
 .shape-round {
   border-radius: 28px;
 }
 
-/* Radius fallback so clipped/blobbed shapes still resolve to a sane box on
-   very small screens where the silhouette would otherwise crop content. */
+/* Tamer radii on very small screens, where extreme silhouettes crop content. */
 @media (max-width: 480px) {
   .shape-blob-a,
   .shape-blob-b,
@@ -70,10 +88,51 @@ body {
   .shape-wave,
   .shape-angled {
     border-radius: 24px;
-    clip-path: none;
   }
 }
 
 .text-glow {
   text-shadow: 0 0 24px rgba(125, 211, 252, 0.45);
+}
+
+/* ---- Ambient decorative creatures drifting behind the dashboard content ---- */
+@keyframes swim {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(10px, -10px) rotate(-3deg);
+  }
+  50% {
+    transform: translate(-8px, -18px) rotate(2deg);
+  }
+  75% {
+    transform: translate(-14px, -4px) rotate(-2deg);
+  }
+}
+.swim {
+  animation: swim var(--swim-duration, 14s) ease-in-out infinite;
+  animation-delay: var(--swim-delay, 0s);
+}
+
+@keyframes drift-gentle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-16px) scale(1.04);
+  }
+}
+.drift-gentle {
+  animation: drift-gentle var(--swim-duration, 10s) ease-in-out infinite;
+  animation-delay: var(--swim-delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swim,
+  .drift-gentle {
+    animation: none;
+  }
 }
