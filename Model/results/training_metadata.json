@@ -1,0 +1,13 @@
+{
+  "model": "5-mer TF-IDF + Logistic Regression",
+  "kmer_size": 5,
+  "max_features": 20000,
+  "C": 10,
+  "solver": "saga",
+  "max_iter": 500,
+  "train_samples": 161920,
+  "validation_samples": 20240,
+  "test_samples": 20240,
+  "species": 500,
+  "training_time_seconds": 7271.669513225555
+}
