@@ -15,6 +15,7 @@ import Credits from "./components/layout/Credits";
 import AuthModal from "./components/modals/AuthModal";
 import IucnDrawer from "./components/modals/IucnDrawer";
 import EndangeredModal from "./components/modals/EndangeredModal";
+import LiveStatusWidget from "./components/decor/LiveStatusWidget";
 import { getIndices, getResults } from "./api/client";
 import { useAppStore } from "./store/useAppStore";
 
@@ -115,6 +116,7 @@ export default function App() {
       <AuthModal />
       <IucnDrawer />
       <EndangeredModal />
+      <LiveStatusWidget />
     </div>
   );
 }

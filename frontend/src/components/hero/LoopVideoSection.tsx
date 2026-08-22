@@ -1,9 +1,9 @@
-import FloatingCreatures, { LOOP_SECTION_CREATURES } from "../decor/FloatingCreatures";
 import UploadSection from "../upload/UploadSection";
 
 export default function LoopVideoSection() {
   return (
-    <section id="overview" className="relative min-h-[105vh]">
+    <section id="overview" className="relative min-h-[135vh] w-full">
+      {/* Sticky Background Video Layer */}
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <video
           autoPlay
@@ -17,9 +17,8 @@ export default function LoopVideoSection() {
         <div className="absolute inset-0 bg-gradient-to-b from-abyss-950/40 via-transparent to-abyss-950" />
       </div>
 
-      {/* <FloatingCreatures placements={LOOP_SECTION_CREATURES} /> */}
-
-      <div className="absolute inset-0 z-10 flex flex-col items-center gap-24 px-6 pt-[15vh] pb-[18vh]">
+      {/* Content Container: Positioned relatively so height naturally fits UploadSection without overlap */}
+      <div className="relative z-10 -mt-[100vh] flex flex-col items-center gap-12 px-6 pt-20 pb-32">
         <div className="max-w-2xl text-center">
           <h2 className="font-display text-3xl font-semibold text-glow md:text-4xl">
             One sample. A full picture of what's in the water.
