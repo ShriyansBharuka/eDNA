@@ -71,7 +71,7 @@ export default function App() {
 
         {/* <FloatingCreatures /> */}
 
-        <main className="relative z-10 mx-auto max-w-6xl px-6 pb-16 pt-16 flex flex-col gap-12 sm:gap-14">
+        <main className="relative z-20 mx-auto max-w-6xl px-6 pb-16 pt-6 flex flex-col gap-10 sm:gap-12">
           <section id="species" className="scroll-mt-28">
             <SpeciesList />
           </section>

@@ -3,7 +3,7 @@ import UploadSection from "../upload/UploadSection";
 
 export default function LoopVideoSection() {
   return (
-    <section id="overview" className="relative min-h-[190vh]">
+    <section id="overview" className="relative min-h-[105vh]">
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <video
           autoPlay

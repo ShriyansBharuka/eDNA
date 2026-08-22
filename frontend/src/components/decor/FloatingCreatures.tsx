@@ -64,7 +64,7 @@ interface FloatingCreaturesProps {
 
 export default function FloatingCreatures({ placements = DASHBOARD_CREATURES }: FloatingCreaturesProps) {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 z-10 hidden overflow-hidden xl:block">
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden xl:block">
       {placements.map((c, i) => {
         const goingLeft = c.dir === "left";
         const swimAnimClass = SWIM_CLASS[c.kind] || "swim-fish";
