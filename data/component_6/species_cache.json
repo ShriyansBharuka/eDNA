@@ -1,0 +1,166 @@
+{
+  "_meta": {
+    "purpose": "Cached IUCN Red List + CITES/WPA status for AquaVigil demo species set.",
+    "why_cached": "IUCN API registration has lead time and the demo must not depend on a live external call. This file IS the conservation_status table content.",
+    "iucn_categories": {
+      "EX": "Extinct",
+      "EW": "Extinct in the Wild",
+      "CR": "Critically Endangered",
+      "EN": "Endangered",
+      "VU": "Vulnerable",
+      "NT": "Near Threatened",
+      "LC": "Least Concern",
+      "DD": "Data Deficient",
+      "NE": "Not Evaluated"
+    },
+    "flag_trigger_categories": ["CR", "EN", "VU"],
+    "last_manually_verified": "2026-08-22",
+    "sources": "IUCN Red List (redlist.org), CITES appendices, Wildlife Protection Act 1972 (as amended 2022) Schedule I/II/IV where applicable to Indian waters"
+  },
+  "species": [
+    {
+      "scientific_name": "Rhincodon typus",
+      "common_name": "Whale shark",
+      "iucn_category": "EN",
+      "cites_appendix": "II",
+      "wpa_schedule": "I",
+      "notes": "Schedule I in India specifically (one of few fish given this status); widely used eDNA demo species"
+    },
+    {
+      "scientific_name": "Sphyrna lewini",
+      "common_name": "Scalloped hammerhead shark",
+      "iucn_category": "CR",
+      "cites_appendix": "II",
+      "wpa_schedule": null,
+      "notes": "Population declined >80%, verified current IUCN assessment"
+    },
+    {
+      "scientific_name": "Sphyrna mokarran",
+      "common_name": "Great hammerhead shark",
+      "iucn_category": "CR",
+      "cites_appendix": "II",
+      "wpa_schedule": null,
+      "notes": null
+    },
+    {
+      "scientific_name": "Carcharodon carcharias",
+      "common_name": "Great white shark",
+      "iucn_category": "VU",
+      "cites_appendix": "II",
+      "wpa_schedule": null,
+      "notes": null
+    },
+    {
+      "scientific_name": "Manta birostris",
+      "common_name": "Giant oceanic manta ray",
+      "iucn_category": "EN",
+      "cites_appendix": "II",
+      "wpa_schedule": "I",
+      "notes": null
+    },
+    {
+      "scientific_name": "Dugong dugon",
+      "common_name": "Dugong",
+      "iucn_category": "VU",
+      "cites_appendix": "I",
+      "wpa_schedule": "I",
+      "notes": "Relevant if reference set includes marine mammals, not just fish"
+    },
+    {
+      "scientific_name": "Chelonia mydas",
+      "common_name": "Green sea turtle",
+      "iucn_category": "EN",
+      "cites_appendix": "I",
+      "wpa_schedule": "I",
+      "notes": null
+    },
+    {
+      "scientific_name": "Eretmochelys imbricata",
+      "common_name": "Hawksbill sea turtle",
+      "iucn_category": "CR",
+      "cites_appendix": "I",
+      "wpa_schedule": "I",
+      "notes": null
+    },
+    {
+      "scientific_name": "Caretta caretta",
+      "common_name": "Loggerhead sea turtle",
+      "iucn_category": "VU",
+      "cites_appendix": "I",
+      "wpa_schedule": "I",
+      "notes": null
+    },
+    {
+      "scientific_name": "Thunnus maccoyii",
+      "common_name": "Southern bluefin tuna",
+      "iucn_category": "CR",
+      "cites_appendix": null,
+      "wpa_schedule": null,
+      "notes": "Commercially fished species, good example of CR-but-not-CITES-listed edge case"
+    },
+    {
+      "scientific_name": "Thunnus thynnus",
+      "common_name": "Atlantic bluefin tuna",
+      "iucn_category": "LC",
+      "cites_appendix": null,
+      "wpa_schedule": null,
+      "notes": "Downlisted from EN in 2021 reassessment after stock recovery - good example of status improving"
+    },
+    {
+      "scientific_name": "Cheilinus undulatus",
+      "common_name": "Humphead (Napoleon) wrasse",
+      "iucn_category": "EN",
+      "cites_appendix": "II",
+      "wpa_schedule": null,
+      "notes": "Reef fish, plausible amplicon target, strong demo value"
+    },
+    {
+      "scientific_name": "Epinephelus lanceolatus",
+      "common_name": "Giant grouper",
+      "iucn_category": "VU",
+      "cites_appendix": null,
+      "wpa_schedule": null,
+      "notes": null
+    },
+    {
+      "scientific_name": "Hippocampus kuda",
+      "common_name": "Spotted seahorse",
+      "iucn_category": "VU",
+      "cites_appendix": "II",
+      "wpa_schedule": "I",
+      "notes": "All seahorse genus Hippocampus is CITES Appendix II"
+    },
+    {
+      "scientific_name": "Carcharhinus longimanus",
+      "common_name": "Oceanic whitetip shark",
+      "iucn_category": "CR",
+      "cites_appendix": "II",
+      "wpa_schedule": null,
+      "notes": null
+    },
+    {
+      "scientific_name": "Clupea harengus",
+      "common_name": "Atlantic herring",
+      "iucn_category": "LC",
+      "cites_appendix": null,
+      "wpa_schedule": null,
+      "notes": "Control species - common, no flags, confirms system doesn't over-flag"
+    },
+    {
+      "scientific_name": "Sardinella longiceps",
+      "common_name": "Indian oil sardine",
+      "iucn_category": "LC",
+      "cites_appendix": null,
+      "wpa_schedule": null,
+      "notes": "Control species - abundant Indian Ocean fish, no flags expected"
+    },
+    {
+      "scientific_name": "Katsuwonus pelamis",
+      "common_name": "Skipjack tuna",
+      "iucn_category": "LC",
+      "cites_appendix": null,
+      "wpa_schedule": null,
+      "notes": "Control species"
+    }
+  ]
+}
