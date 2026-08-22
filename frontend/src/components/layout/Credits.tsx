@@ -1,6 +1,3 @@
-// Attribution for the real marine-life / shipwreck photos in FloatingCreatures
-// and Shipwreck — several are CC BY / CC BY-SA from Wikimedia Commons and
-// require credit; keeping it here in one place rather than per-image.
 const CREDITS: { name: string; author: string; license: string; url: string }[] = [
   {
     name: "Clownfish",
@@ -77,9 +74,14 @@ const DATA_SOURCES: { name: string; url: string; note: string }[] = [
 
 export default function Credits() {
   return (
-    <footer className="border-t border-white/5 px-6 py-12">
-      <div className="mx-auto max-w-5xl">
-        <h4 className="mb-5 text-[11px] uppercase tracking-[0.28em] text-slate-500">Data sources</h4>
+    <footer className="relative w-full bg-abyss-950 pt-12 pb-16 px-6">
+      {/* Top Subtle Gradient Transition */}
+      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-abyss-950/80 to-abyss-950 pointer-events-none" />
+
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300/80 text-glow">
+          Data sources &amp; Infrastructure
+        </h4>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {DATA_SOURCES.map((s) => (
             <a
@@ -87,32 +89,39 @@ export default function Credits() {
               href={s.url}
               target="_blank"
               rel="noreferrer"
-              className="glass glass-hover shape-round block px-4 py-3.5"
+              className="glass glass-hover shape-round block px-4 py-3.5 bg-abyss-950/60 border-white/10"
             >
-              <span className="flex items-center gap-1.5 text-sm font-medium" style={{ color: "#7dd3fc" }}>
+              <span className="flex items-center gap-1.5 text-sm font-medium text-sky-300">
                 {s.name}
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 17L17 7M17 7H8M17 7v9" />
                 </svg>
               </span>
-              <span className="mt-1 block text-[11px] leading-snug text-slate-500">{s.note}</span>
+              <span className="mt-1 block text-[11px] leading-snug text-slate-400">{s.note}</span>
             </a>
           ))}
         </div>
-      </div>
 
-      <p className="mx-auto mt-10 max-w-3xl text-center text-[11px] leading-relaxed text-slate-600">
-        Marine-life &amp; wreck photography (cropped, background removed) via Wikimedia Commons:{" "}
-        {CREDITS.map((c, i) => (
-          <span key={c.name}>
-            <a href={c.url} target="_blank" rel="noreferrer" className="underline decoration-slate-700 hover:text-slate-400">
-              {c.name}
-            </a>{" "}
-            &copy; {c.author} ({c.license})
-            {i < CREDITS.length - 1 ? ", " : "."}
-          </span>
-        ))}
-      </p>
+        <p className="mt-10 max-w-3xl text-center text-[11px] leading-relaxed text-slate-400/90 mx-auto">
+          Marine-life &amp; wreck imagery via Wikimedia Commons:{" "}
+          {CREDITS.map((c, i) => (
+            <span key={c.name}>
+              <a href={c.url} target="_blank" rel="noreferrer" className="underline decoration-slate-600 hover:text-cyan-300">
+                {c.name}
+              </a>{" "}
+              &copy; {c.author} ({c.license})
+              {i < CREDITS.length - 1 ? ", " : "."}
+            </span>
+          ))}
+        </p>
+
+        {/* Team Credit */}
+        <div className="mt-8 pt-6 border-t border-white/10 text-center">
+          <p className="text-xs font-medium tracking-wider text-cyan-300/90 uppercase text-glow">
+            Created by team <span className="font-bold text-sky-200">Gravity Falls</span>
+          </p>
+        </div>
+      </div>
     </footer>
   );
 }

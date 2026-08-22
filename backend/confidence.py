@@ -1,33 +1,11 @@
-# confidence.py
-# AquaVigil - Confidence Layer (Component 4)
-# Combines classifier agreement (from router.py) and match identity (%id from VSEARCH)
-# into one simple, explainable confidence score per detection.
-
 from router import consensus_call
 
-# Weights - how much each factor contributes to the final score.
-# Kept simple and tunable, as the spec asks for.
 AGREEMENT_WEIGHT = 0.6
 IDENTITY_WEIGHT = 0.4
 
 
 def calculate_confidence(marker_gene, vsearch_species, kraken_species, vsearch_identity):
-    """
-    vsearch_species: species name VSEARCH predicted
-    kraken_species: species name Kraken2 predicted
-    vsearch_identity: VSEARCH's %identity for this match, as a number 0-100
-                       (this is the "how close was the match" signal)
-
-    Returns a dict with the final species call, agreement info,
-    and one confidence score between 0 and 1.
-    """
     result = consensus_call(marker_gene, vsearch_species, kraken_species)
-
-    # Agreement component: both_agree = full score, disagreement = half.
-    # BUT: agreement is only trusted at full strength if the match itself is strong.
-    # Below 97% identity, cap the agreement bonus - this is the genus-confusion
-    # zone (e.g. Calyptotis vs Plestiodon at ~85-90% identity), where both tools
-    # can independently land on the same WRONG close relative.
     IDENTITY_TRUST_THRESHOLD = 97.0
 
     if result["agreement"] == "both_agree":

@@ -17,7 +17,7 @@ export default function LoopVideoSection() {
         <div className="absolute inset-0 bg-gradient-to-b from-abyss-950/40 via-transparent to-abyss-950" />
       </div>
 
-      <FloatingCreatures placements={LOOP_SECTION_CREATURES} columnRem={40} />
+      {/* <FloatingCreatures placements={LOOP_SECTION_CREATURES} /> */}
 
       <div className="absolute inset-0 z-10 flex flex-col items-center gap-24 px-6 pt-[15vh] pb-[18vh]">
         <div className="max-w-2xl text-center">

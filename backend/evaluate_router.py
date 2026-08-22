@@ -1,10 +1,7 @@
-
 import csv
 import re
 from router import consensus_call
 
-# ---------- Step 1: Load manifest.csv (the ground truth) ----------
-# read_id -> (true_species, marker_gene)
 manifest = {}
 with open("manifest.csv") as f:
     reader = csv.DictReader(f)
@@ -15,8 +12,6 @@ with open("manifest.csv") as f:
         }
 
 print(f"Loaded {len(manifest)} entries from manifest.csv")
-
-# ---------- Step 2: Load taxid -> species name mapping (names.dmp) ----------
 taxid_to_name = {}
 with open("12S_db/taxonomy/names.dmp") as f:
     for line in f:
@@ -55,7 +50,6 @@ with open("vsearch_clean.tsv") as f:
 
 print(f"Loaded {len(vsearch_calls)} VSEARCH calls")
 
-# ---------- Step 4: Load Kraken2 results ----------
 kraken_calls = {}
 with open("kraken2_results.txt") as f:
     for line in f:
@@ -70,7 +64,6 @@ with open("kraken2_results.txt") as f:
 
 print(f"Loaded {len(kraken_calls)} Kraken2 calls")
 
-# ---------- Step 5: Run consensus_call on every read, check against manifest ----------
 correct = 0
 total_checked = 0
 both_agree_count = 0
