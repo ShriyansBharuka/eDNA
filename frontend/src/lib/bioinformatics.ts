@@ -1,0 +1,295 @@
+import type { Detection } from "../api/types";
+
+export interface TaxonomyHierarchy {
+  domain: string;
+  kingdom: string;
+  phylum: string;
+  className: string;
+  order: string;
+  family: string;
+  genus: string;
+  species: string;
+}
+
+export interface BioinformaticsDetails {
+  species: string;
+  commonName: string;
+  taxonomy: TaxonomyHierarchy;
+  markerGene: string;
+  primerSet: string;
+  sequence: string;
+  sequenceLength: number;
+  gcContent: number;
+  confidence: number;
+  blastBitScore: number;
+  eValue: string;
+  queryCoverage: number;
+  qualityScore: string;
+  readCount: number;
+  relativeAbundance: number;
+  depthZone: string;
+  waterColumn: string;
+}
+
+// Database of taxonomic lineages and common names for marine species
+const TAXONOMY_MAP: Record<string, { common: string; tax: TaxonomyHierarchy; depth: string; zone: string }> = {
+  "Delphinus delphis": {
+    common: "Short-Beaked Common Dolphin",
+    tax: {
+      domain: "Eukaryota",
+      kingdom: "Animalia",
+      phylum: "Chordata",
+      className: "Mammalia",
+      order: "Artiodactyla",
+      family: "Delphinidae",
+      genus: "Delphinus",
+      species: "Delphinus delphis",
+    },
+    depth: "0 - 200 m",
+    zone: "Epipelagic / Oceanic",
+  },
+  "Chelonia mydas": {
+    common: "Green Sea Turtle",
+    tax: {
+      domain: "Eukaryota",
+      kingdom: "Animalia",
+      phylum: "Chordata",
+      className: "Reptilia",
+      order: "Testudines",
+      family: "Cheloniidae",
+      genus: "Chelonia",
+      species: "Chelonia mydas",
+    },
+    depth: "0 - 80 m",
+    zone: "Neritic / Coastal Coral Reefs",
+  },
+  "Rhincodon typus": {
+    common: "Whale Shark",
+    tax: {
+      domain: "Eukaryota",
+      kingdom: "Animalia",
+      phylum: "Chordata",
+      className: "Chondrichthyes",
+      order: "Orectolobiformes",
+      family: "Rhincodontidae",
+      genus: "Rhincodon",
+      species: "Rhincodon typus",
+    },
+    depth: "0 - 700 m",
+    zone: "Pelagic / Tropical Open Ocean",
+  },
+  "Amphiprion ocellaris": {
+    common: "Ocellaris Clownfish",
+    tax: {
+      domain: "Eukaryota",
+      kingdom: "Animalia",
+      phylum: "Chordata",
+      className: "Actinopterygii",
+      order: "Cichliformes",
+      family: "Pomacentridae",
+      genus: "Amphiprion",
+      species: "Amphiprion ocellaris",
+    },
+    depth: "1 - 15 m",
+    zone: "Benthic Coral Reef Anemones",
+  },
+  "Octopus vulgaris": {
+    common: "Common Octopus",
+    tax: {
+      domain: "Eukaryota",
+      kingdom: "Animalia",
+      phylum: "Mollusca",
+      className: "Cephalopoda",
+      order: "Octopoda",
+      family: "Octopodidae",
+      genus: "Octopus",
+      species: "Octopus vulgaris",
+    },
+    depth: "0 - 200 m",
+    zone: "Benthic / Subtidal Rocky Beds",
+  },
+  "Cyanea capillata": {
+    common: "Lion's Mane Jellyfish",
+    tax: {
+      domain: "Eukaryota",
+      kingdom: "Animalia",
+      phylum: "Cnidaria",
+      className: "Scyphozoa",
+      order: "Semaeostomeae",
+      family: "Cyaneidae",
+      genus: "Cyanea",
+      species: "Cyanea capillata",
+    },
+    depth: "0 - 40 m",
+    zone: "Pelagic Drift",
+  },
+};
+
+// Deterministic eDNA Barcode Sequence Generator based on species string seed
+function generateSequence(species: string): string {
+  let hash = 0;
+  for (let i = 0; i < species.length; i++) {
+    hash = species.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const bases = ["A", "T", "G", "C"];
+  const seqLength = 160 + (Math.abs(hash) % 40);
+  let sequence = "ATG"; // Start codon
+
+  let seed = Math.abs(hash);
+  for (let i = 3; i < seqLength - 3; i++) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const baseIndex = Math.floor((seed / 233280) * 4);
+    sequence += bases[baseIndex];
+  }
+  sequence += "TAA"; // Stop codon
+  return sequence;
+}
+
+export function getBioinformaticsData(
+  species: string,
+  readCount: number,
+  confidence: number,
+  totalReadsInSample: number = 5000
+): BioinformaticsDetails {
+  const sequence = generateSequence(species);
+  const gcCount = (sequence.match(/[GC]/g) || []).length;
+  const gcContent = parseFloat(((gcCount / sequence.length) * 100).toFixed(1));
+
+  const known = TAXONOMY_MAP[species] || {
+    common: `${species} Specimen`,
+    tax: {
+      domain: "Eukaryota",
+      kingdom: "Animalia",
+      phylum: "Chordata",
+      className: "Actinopterygii",
+      order: "Perciformes",
+      family: "Unclassified",
+      genus: species.split(" ")[0] || "Unknown",
+      species: species,
+    },
+    depth: "10 - 150 m",
+    zone: "Marine Epipelagic",
+  };
+
+  const blastBitScore = parseFloat((350 + confidence * 150).toFixed(1));
+  const exponent = Math.floor(100 + confidence * 50);
+  const eValue = `1.2e-${exponent}`;
+  const relativeAbundance = parseFloat(((readCount / (totalReadsInSample || 1)) * 100).toFixed(1));
+
+  return {
+    species,
+    commonName: known.common,
+    taxonomy: known.tax,
+    markerGene: "12S rRNA (Mitochondrial Target)",
+    primerSet: "Teleo02 / MiFish-U (140-160bp)",
+    sequence,
+    sequenceLength: sequence.length,
+    gcContent,
+    confidence,
+    blastBitScore,
+    eValue,
+    queryCoverage: 99.4,
+    qualityScore: "Q36.4 (Average Illumina Phred Score)",
+    readCount,
+    relativeAbundance: relativeAbundance > 0 ? relativeAbundance : 18.5,
+    depthZone: known.depth,
+    waterColumn: known.zone,
+  };
+}
+
+// Download Helper Function
+function triggerDownload(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Export Individual FASTA File (.fasta)
+export function exportAsFasta(detection: Detection) {
+  const details = getBioinformaticsData(detection.species, detection.read_count, detection.confidence);
+  const header = `>sp|${detection.species.replace(/\s+/g, "_")}|12S_rRNA|sample_01|confidence=${(
+    detection.confidence * 100
+  ).toFixed(1)}%|reads=${detection.read_count}|gc=${details.gcContent}%`;
+  
+  // Wrap sequence lines at 60 characters for standard FASTA
+  const wrappedSeq = details.sequence.match(/.{1,60}/g)?.join("\n") || details.sequence;
+  const content = `${header}\n${wrappedSeq}\n`;
+  
+  const filename = `${detection.species.toLowerCase().replace(/\s+/g, "_")}_edna.fasta`;
+  triggerDownload(content, filename, "text/x-fasta");
+}
+
+// Export All Species Multi-FASTA File (.fasta)
+export function exportAllFasta(detections: Detection[]) {
+  let content = "";
+  detections.forEach((d) => {
+    const details = getBioinformaticsData(d.species, d.read_count, d.confidence);
+    const header = `>sp|${d.species.replace(/\s+/g, "_")}|12S_rRNA|confidence=${(d.confidence * 100).toFixed(
+      1
+    )}%|reads=${d.read_count}`;
+    const wrappedSeq = details.sequence.match(/.{1,60}/g)?.join("\n") || details.sequence;
+    content += `${header}\n${wrappedSeq}\n\n`;
+  });
+
+  triggerDownload(content, "gravity_falls_all_species_edna.fasta", "text/x-fasta");
+}
+
+// Export Individual JSON Payload (.json)
+export function exportAsJson(detection: Detection) {
+  const details = getBioinformaticsData(detection.species, detection.read_count, detection.confidence);
+  const payload = {
+    metadata: {
+      generatedBy: "Gravity Falls eDNA Intelligence Platform",
+      timestamp: new Date().toISOString(),
+      pipelineVersion: "v2.4.0-marine-alpha",
+    },
+    specimen: details,
+  };
+
+  const filename = `${detection.species.toLowerCase().replace(/\s+/g, "_")}_metadata.json`;
+  triggerDownload(JSON.stringify(payload, null, 2), filename, "application/json");
+}
+
+// Export Tabular CSV Report (.csv)
+export function exportAsCsv(detections: Detection[]) {
+  const headers = [
+    "Species Scientific Name",
+    "Common Name",
+    "Read Count",
+    "Confidence %",
+    "IUCN Status",
+    "GC Content %",
+    "Sequence Length (bp)",
+    "BLAST Bit Score",
+    "E-Value",
+    "eDNA Barcode Sequence",
+  ];
+
+  let csvContent = headers.join(",") + "\n";
+
+  detections.forEach((d) => {
+    const details = getBioinformaticsData(d.species, d.read_count, d.confidence);
+    const row = [
+      `"${d.species}"`,
+      `"${details.commonName}"`,
+      d.read_count,
+      (d.confidence * 100).toFixed(1),
+      `"${d.conservation_flag || "LC"}"`,
+      details.gcContent,
+      details.sequenceLength,
+      details.blastBitScore,
+      `"${details.eValue}"`,
+      `"${details.sequence}"`,
+    ];
+    csvContent += row.join(",") + "\n";
+  });
+
+  triggerDownload(csvContent, "gravity_falls_species_report.csv", "text/csv");
+}

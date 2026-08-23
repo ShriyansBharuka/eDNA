@@ -3,12 +3,11 @@ import { useAppStore } from "../../store/useAppStore";
 
 export default function ScrollVideoHero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const forwardVideoRef = useRef<HTMLVideoElement>(null);
+  const reverseVideoRef = useRef<HTMLVideoElement>(null);
   const setHeroDone = useAppStore((s) => s.setHeroDone);
 
-  // Tracks whether video is playing forward ("/opening.mp4") or native reverse ("/opening.reverse.mp4")
-  const [videoSrc, setVideoSrc] = useState("/opening.mp4");
-  const isReversingRef = useRef(false);
+  const [activeVideo, setActiveVideo] = useState<"forward" | "reverse">("forward");
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -25,11 +24,14 @@ export default function ScrollVideoHero() {
           hasScrolledDownOnce = true;
         }
 
-        // When user scrolls back UP to hero after having scrolled down:
+        // When user scrolls back UP into hero section after having scrolled down:
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5 && hasScrolledDownOnce) {
           hasScrolledDownOnce = false;
-          isReversingRef.current = true;
-          setVideoSrc("/opening.reverse.mp4");
+          setActiveVideo("reverse");
+          if (reverseVideoRef.current) {
+            reverseVideoRef.current.currentTime = 0;
+            reverseVideoRef.current.play().catch(() => {});
+          }
         }
       },
       { threshold: [0.3, 0.5, 0.8] }
@@ -39,40 +41,59 @@ export default function ScrollVideoHero() {
     return () => observer.disconnect();
   }, [setHeroDone]);
 
-  // Handle video completion
-  const handleVideoEnded = () => {
-    if (isReversingRef.current) {
-      // Reversing phase complete! Now switch to forward playback
-      isReversingRef.current = false;
-      setVideoSrc("/opening.mp4");
+  const handleReverseEnded = () => {
+    // Seamless dual-player transition from reverse to forward (zero black flash)
+    setActiveVideo("forward");
+    if (forwardVideoRef.current) {
+      forwardVideoRef.current.currentTime = 0;
+      forwardVideoRef.current.play().catch(() => {});
+    }
+  };
+
+  const handleForwardEnded = () => {
+    // Forward video complete -> smooth scroll down to next section
+    const nextSection = document.getElementById("overview");
+    if (nextSection) {
+      nextSection.scrollIntoView({ behavior: "smooth" });
     } else {
-      // Forward playback complete! Smooth scroll to next section
-      const nextSection = document.getElementById("overview");
-      if (nextSection) {
-        nextSection.scrollIntoView({ behavior: "smooth" });
-      } else {
-        window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
-      }
+      window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
     }
   };
 
   return (
     <section ref={sectionRef} className="relative h-screen w-full overflow-hidden bg-black">
-      {/* 60 FPS Native Hardware-Accelerated Video Player */}
+      {/* Forward Video Layer */}
       <video
-        key={videoSrc}
-        ref={videoRef}
+        ref={forwardVideoRef}
         autoPlay
         muted
         playsInline
-        src={videoSrc}
-        onEnded={handleVideoEnded}
-        className="absolute inset-0 h-full w-full object-cover"
+        preload="auto"
+        src="/opening.mp4"
+        onEnded={handleForwardEnded}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${
+          activeVideo === "forward" ? "opacity-100 z-10" : "opacity-0 z-0"
+        }`}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-abyss-950/85" />
+
+      {/* Reverse Video Layer (Pre-buffered for seamless 0ms transition) */}
+      <video
+        ref={reverseVideoRef}
+        muted
+        playsInline
+        preload="auto"
+        src="/opening.reverse.mp4"
+        onEnded={handleReverseEnded}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${
+          activeVideo === "reverse" ? "opacity-100 z-10" : "opacity-0 z-0"
+        }`}
+      />
+
+      {/* Ambient Top & Bottom Gradient Vignette Overlay */}
+      <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/50 via-transparent to-abyss-950/85 pointer-events-none" />
 
       {/* Hero Title */}
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center text-center px-6 pointer-events-none z-10">
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center text-center px-6 pointer-events-none z-30">
         <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight text-glow">Gravity Falls</h1>
         <p className="mt-3 max-w-xl text-slate-300/90 text-sm md:text-base">
           eDNA marine species intelligence — scroll to descend.
@@ -80,7 +101,7 @@ export default function ScrollVideoHero() {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute inset-x-0 bottom-10 flex flex-col items-center gap-2 text-slate-300/80 z-10 pointer-events-none">
+      <div className="absolute inset-x-0 bottom-10 flex flex-col items-center gap-2 text-slate-300/80 z-30 pointer-events-none">
         <span className="text-xs uppercase tracking-[0.3em]">Scroll to dive in</span>
         <span className="h-8 w-5 rounded-full border border-slate-400/50 flex items-start justify-center p-1">
           <span className="h-1.5 w-1.5 rounded-full bg-glow-400 animate-drift" />

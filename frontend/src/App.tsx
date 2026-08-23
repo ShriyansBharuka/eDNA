@@ -16,6 +16,7 @@ import AuthModal from "./components/modals/AuthModal";
 import IucnDrawer from "./components/modals/IucnDrawer";
 import EndangeredModal from "./components/modals/EndangeredModal";
 import LiveStatusWidget from "./components/decor/LiveStatusWidget";
+import ScientificModal from "./components/modals/ScientificModal";
 import { getIndices, getResults } from "./api/client";
 import { useAppStore } from "./store/useAppStore";
 
@@ -117,6 +118,7 @@ export default function App() {
       <IucnDrawer />
       <EndangeredModal />
       <LiveStatusWidget />
+      <ScientificModal />
     </div>
   );
 }

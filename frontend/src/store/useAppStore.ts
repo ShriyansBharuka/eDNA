@@ -20,9 +20,11 @@ interface AppState {
   authOpen: boolean;
   iucnOpen: boolean;
   endangeredOpen: boolean;
+  scientificModalDetection: Detection | null;
   setAuthOpen: (open: boolean) => void;
   setIucnOpen: (open: boolean) => void;
   setEndangeredOpen: (open: boolean) => void;
+  setScientificModalDetection: (d: Detection | null) => void;
   removeDetection: (speciesName: string) => void;
 }
 
@@ -50,9 +52,11 @@ export const useAppStore = create<AppState>((set) => ({
   authOpen: false,
   iucnOpen: false,
   endangeredOpen: false,
+  scientificModalDetection: null,
   setAuthOpen: (open) => set({ authOpen: open }),
   setIucnOpen: (open) => set({ iucnOpen: open }),
   setEndangeredOpen: (open) => set({ endangeredOpen: open }),
+  setScientificModalDetection: (d) => set({ scientificModalDetection: d }),
 
   removeDetection: (speciesName) =>
     set((state) => ({
