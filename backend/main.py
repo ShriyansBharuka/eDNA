@@ -120,8 +120,7 @@ def seed_demo_sample():
     every visitor sees it regardless of login state."""
     try:
         with open(SEED_FASTQ_PATH, "rb") as f:
-            content = f.read()
-        all_sequences = parse_reads(SEED_FASTQ_PATH, content)
+            all_sequences = parse_reads(SEED_FASTQ_PATH, f)
         window = 15
         num_windows = max(1, SEED_READ_COUNT // window)
         span = len(all_sequences) // num_windows
@@ -193,9 +192,13 @@ async def upload_sample(
 ):
     """Parses the uploaded reads file and stores it under a new sample id."""
     global _next_sample_id
-    content = await file.read()
+    # Reading straight from file.file (streamed from disk/network as the
+    # request came in) instead of `await file.read()` — that would pull the
+    # ENTIRE upload into one Python bytes object before parsing even starts,
+    # which alone was enough to OOM-kill the whole Render instance on a
+    # 135MB real file.
     try:
-        sequences = parse_reads(file.filename or "upload", content, max_sequences=MAX_READS_PER_CLASSIFY)
+        sequences = parse_reads(file.filename or "upload", file.file, max_sequences=MAX_READS_PER_CLASSIFY)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
