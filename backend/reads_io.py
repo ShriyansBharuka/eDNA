@@ -8,12 +8,29 @@ sequence strings out of whatever the frontend's upload dropzone accepts
 
 import gzip
 
+# IUPAC nucleotide codes (including ambiguity codes) — a real DNA read should
+# be almost entirely these. Catches the case where a non-sequence file (e.g.
+# a taxonomy/accession list) has no ">" headers and would otherwise get
+# silently parsed as one bare "sequence" per line — every one of those
+# then classifies as low-confidence noise with no error anywhere, which
+# looks exactly like a broken app rather than the wrong file being uploaded.
+_VALID_BASES = set("ACGTUNRYSWKMBDHV")
+_MIN_VALID_FRACTION = 0.9
+
+
+def _looks_like_dna(seq: str) -> bool:
+    if not seq:
+        return False
+    valid = sum(1 for ch in seq if ch in _VALID_BASES)
+    return (valid / len(seq)) >= _MIN_VALID_FRACTION
+
 
 def parse_reads(filename: str, content: bytes) -> list[str]:
     """
     Returns the list of sequence strings found in the file.
-    Raises ValueError if none can be parsed — callers should turn that
-    into a 422 rather than silently "succeeding" with zero reads.
+    Raises ValueError if none can be parsed, or if what was parsed doesn't
+    actually look like DNA — callers should turn that into a 422 rather
+    than silently "succeeding" with reads that will all fail to classify.
     """
     name = filename.lower()
     if name.endswith(".gz"):
@@ -33,7 +50,15 @@ def parse_reads(filename: str, content: bytes) -> list[str]:
     sequences = [s.strip().upper() for s in sequences if s.strip()]
     if not sequences:
         raise ValueError(f"No sequences could be parsed from '{filename}'")
-    return sequences
+
+    dna_sequences = [s for s in sequences if _looks_like_dna(s)]
+    if not dna_sequences:
+        raise ValueError(
+            f"'{filename}' was parsed into {len(sequences)} entries, but none of them look like DNA "
+            "sequences (mostly non-ACGT characters). Check this is a real FASTA/FASTQ read file, not "
+            "something else, like a taxonomy/accession list."
+        )
+    return dna_sequences
 
 
 def _parse_fastq(text: str) -> list[str]:

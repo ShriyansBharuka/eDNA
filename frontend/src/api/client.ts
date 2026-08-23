@@ -22,7 +22,17 @@ const BASE = import.meta.env.VITE_API_BASE_URL ?? "/api";
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, init);
   if (!res.ok) {
-    throw new Error(`${init?.method ?? "GET"} ${path} failed: ${res.status}`);
+    // FastAPI error responses are {"detail": "..."} — surface that real
+    // message (e.g. "this doesn't look like a DNA file") instead of a bare
+    // status code, so the user actually finds out what went wrong.
+    let detail: string | undefined;
+    try {
+      const body = await res.json();
+      detail = typeof body?.detail === "string" ? body.detail : undefined;
+    } catch {
+      // Response body wasn't JSON — fall back to the generic message below.
+    }
+    throw new Error(detail ?? `${init?.method ?? "GET"} ${path} failed: ${res.status}`);
   }
   return res.json() as Promise<T>;
 }
