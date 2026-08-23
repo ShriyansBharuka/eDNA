@@ -195,7 +195,7 @@ async def upload_sample(
     global _next_sample_id
     content = await file.read()
     try:
-        sequences = parse_reads(file.filename or "upload", content)
+        sequences = parse_reads(file.filename or "upload", content, max_sequences=MAX_READS_PER_CLASSIFY)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
