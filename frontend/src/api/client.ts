@@ -5,12 +5,16 @@ import type {
   IndicesResponse,
   MarkerGene,
   ResultsResponse,
+  SimilarityResponse,
   UploadSampleResponse,
 } from "./types";
 
-// All calls go through Vite's /api proxy (see vite.config.ts) to the FastAPI
-// stub server, so nothing here needs to know about CORS or the backend port.
-const BASE = "/api";
+// Local dev: goes through Vite's /api proxy (see vite.config.ts) to the
+// FastAPI server on :8000, so nothing here needs to know about CORS or the
+// port. Production build: set VITE_API_BASE_URL (in Vercel's project env
+// vars) to the deployed Render backend's full URL — there's no dev proxy in
+// a static production build, so this has to be a real absolute URL there.
+const BASE = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, init);
@@ -45,4 +49,8 @@ export function getDistribution(speciesName: string): Promise<DistributionRespon
 
 export function getConservationStatus(speciesName: string): Promise<ConservationStatusResponse> {
   return request<ConservationStatusResponse>(`/species/${encodeURIComponent(speciesName)}/conservation-status`);
+}
+
+export function getSimilarity(speciesName: string): Promise<SimilarityResponse> {
+  return request<SimilarityResponse>(`/species/${encodeURIComponent(speciesName)}/similarity`);
 }

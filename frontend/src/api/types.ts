@@ -51,4 +51,18 @@ export interface ConservationStatusResponse {
   note: string;
 }
 
+export interface SimilarityNeighbor {
+  species: string;
+  similarity: number;
+  x: number;
+  y: number;
+}
+
+export interface SimilarityResponse {
+  species: string;
+  x: number;
+  y: number;
+  neighbors: SimilarityNeighbor[];
+}
+
 export type MarkerGene = "12S" | "16S" | "COI";

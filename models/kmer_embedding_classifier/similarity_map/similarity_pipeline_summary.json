@@ -1,0 +1,20 @@
+{
+  "embedding_cache": {
+    "level": "species_centroid",
+    "total_joined_reads_processed": 202400,
+    "num_species": 500,
+    "embedding_dimensionality": 192,
+    "embedding_source": "KmerMeanMlpClassifier masked mean pooled embedding before classifier MLP",
+    "embeddings_file": "D:\\SIH\\eDNA\\models\\kmer_embedding_classifier\\similarity_map\\embeddings\\species_centroid_embeddings.npy",
+    "metadata_file": "D:\\SIH\\eDNA\\models\\kmer_embedding_classifier\\similarity_map\\embeddings\\species_metadata.csv"
+  },
+  "similarity_map": {
+    "nodes": 500,
+    "edges": 3394,
+    "embedding_dimensionality": 192,
+    "similarity_matrix_file": "D:\\SIH\\eDNA\\models\\kmer_embedding_classifier\\similarity_map\\graph\\species_cosine_similarity.npy",
+    "edges_file": "D:\\SIH\\eDNA\\models\\kmer_embedding_classifier\\similarity_map\\graph\\species_knn_edges.csv",
+    "coordinates_file": "D:\\SIH\\eDNA\\models\\kmer_embedding_classifier\\similarity_map\\map\\species_umap_coordinates.csv",
+    "map_file": "D:\\SIH\\eDNA\\models\\kmer_embedding_classifier\\similarity_map\\map\\similarity_map.json"
+  }
+}

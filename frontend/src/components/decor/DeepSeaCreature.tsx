@@ -15,7 +15,7 @@ export default function DeepSeaCreature() {
   };
 
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
       {/* Majestic Bioluminescent Sea Turtle Cruising Across Deep Ocean */}
       <div className="absolute roam-right" style={outerStyle}>
         <div className="swim-turtle" style={innerStyle}>

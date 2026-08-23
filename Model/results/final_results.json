@@ -1,0 +1,14 @@
+{
+  "model": "5-mer TF-IDF + Logistic Regression",
+  "num_species": 500,
+  "train_samples": 161920,
+  "validation_samples": 20240,
+  "test_samples": 20240,
+  "num_features": 1416,
+  "validation_accuracy": 0.9865612648221344,
+  "validation_accuracy_percent": 98.65612648221344,
+  "validation_macro_f1": 0.9898279515601051,
+  "test_accuracy": 0.9865612648221344,
+  "test_accuracy_percent": 98.65612648221344,
+  "test_macro_f1": 0.9895266667065244
+}

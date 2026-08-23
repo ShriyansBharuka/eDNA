@@ -3,3 +3,5 @@ uvicorn[standard]==0.30.6
 python-multipart==0.0.9
 passlib[bcrypt]==1.7.4
 pyjwt==2.9.0
+scikit-learn==1.8.0
+joblib==1.5.3

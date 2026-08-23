@@ -5,3 +5,5 @@ venv/
 .venv/
 *.log
 node_modules
+frontend/dist/
+frontend/tsconfig.tsbuildinfo

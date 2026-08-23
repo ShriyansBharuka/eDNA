@@ -1,0 +1,40 @@
+{
+  "model_name": "kmer_embedding_classifier",
+  "experiment_id": "exp05_mean_k6_overlap",
+  "architecture": "kmer_mean_mlp",
+  "input_representation": {
+    "kmer_size": 6,
+    "stride": 1,
+    "overlapping": true,
+    "ambiguous_or_unknown_policy": "UNK",
+    "short_sequence_policy": "single UNK token"
+  },
+  "model": {
+    "embedding_dim": 192,
+    "pooling": "masked_mean",
+    "classifier": [
+      "LayerNorm(192)",
+      "Dropout(0.2)",
+      "Linear(192, 512)",
+      "GELU",
+      "Dropout(0.2)",
+      "Linear(512, 500)"
+    ],
+    "trainable_parameters": 1142516
+  },
+  "training": {
+    "optimizer": "AdamW",
+    "learning_rate": 0.001,
+    "weight_decay": 0.01,
+    "batch_size": 512,
+    "max_epochs": 40,
+    "epochs_run": 38,
+    "best_epoch": 32,
+    "label_smoothing": 0.02,
+    "class_weighting": true,
+    "gradient_clip": 1.0,
+    "scheduler": "CosineAnnealingLR",
+    "selection_metric": "validation macro-F1"
+  }
+}
+
