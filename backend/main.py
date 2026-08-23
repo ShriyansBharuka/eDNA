@@ -3,8 +3,9 @@ import sys
 import sqlite3
 from collections import Counter, defaultdict
 
-from fastapi import FastAPI, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "data", "component_6"))
 sys.path.append(os.path.dirname(__file__))
@@ -13,8 +14,9 @@ from biodiversity_indices import calculate_all_indices
 from classifier import classify_reads
 from reads_io import parse_reads
 from similarity import get_similarity
+from auth import create_user, authenticate_user, create_token, get_current_user, get_optional_user
 
-app = FastAPI(title="AquaVigil API", version="0.4.0")
+app = FastAPI(title="AquaVigil API", version="0.6.0")
 
 # Hosted frontend (Vercel) and backend (Render) live on different origins.
 # No cookies/session credentials are used anywhere in this API, so a fully
@@ -30,17 +32,9 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "aquavigil.db")
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 SEED_FASTQ_PATH = os.path.join(os.path.dirname(__file__), "..", "simulated_data", "simulated_reads.fastq")
 
-# A real upload can carry ~200k reads; classifying all of them synchronously
-# would take minutes. Capping keeps a request under ~2s while staying a
-# statistically meaningful sample of the file.
 MAX_READS_PER_CLASSIFY = 2000
 SEED_READ_COUNT = 100
 
-# In-memory per-sample store — a single-process demo server with no auth, so
-# this is deliberately not SQLite: the existing `detections` table schema was
-# built for the multi-classifier-source ensemble scenario, which doesn't fit
-# a single real classifier's output cleanly. Id 1 is reserved for the seeded
-# demo sample (see seed_demo_sample below); real uploads start at 2.
 SAMPLES: dict[int, dict] = {}
 _next_sample_id = 2
 
@@ -88,19 +82,13 @@ def init_db():
 
 @app.on_event("startup")
 def seed_demo_sample():
-    """Populate sample id 1 with real classifier output (not hardcoded
-    placeholder species) so the dashboard isn't empty on first page load,
-    before anyone has uploaded anything — same pipeline a real upload uses."""
+    """Populate sample id 1 with real classifier output so the dashboard
+    isn't empty on first page load. Owned by no one (user_id=None), so
+    every visitor sees it regardless of login state."""
     try:
         with open(SEED_FASTQ_PATH, "rb") as f:
             content = f.read()
         all_sequences = parse_reads(SEED_FASTQ_PATH, content)
-        # The file is grouped by species (sequential runs of the same
-        # species — reads/species is large enough that a run is always
-        # longer than one window here), so a handful of consecutive-read
-        # windows spread across the file gives real, varied per-species
-        # read counts instead of either one species (first N reads) or
-        # every species landing at exactly 1 read (a full stride).
         window = 15
         num_windows = max(1, SEED_READ_COUNT // window)
         span = len(all_sequences) // num_windows
@@ -110,6 +98,7 @@ def seed_demo_sample():
             sequences.extend(all_sequences[start:start + window])
     except (FileNotFoundError, ValueError):
         SAMPLES[1] = {
+            "user_id": None,
             "sequences": [], "marker_gene": "COI", "status": "uploaded",
             "detections": [], "indices": {"richness": 0, "shannon_index": 0.0, "evenness": 0.0},
             "reads_used": 0,
@@ -118,6 +107,7 @@ def seed_demo_sample():
 
     detections, indices, reads_used = _classify_and_aggregate(sequences)
     SAMPLES[1] = {
+        "user_id": None,
         "sequences": sequences,
         "marker_gene": "12S",
         "status": "done",
@@ -127,10 +117,46 @@ def seed_demo_sample():
     }
 
 
+class SignupRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+@app.post("/auth/signup")
+async def signup(payload: SignupRequest):
+    if len(payload.password) < 8:
+        raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
+    try:
+        user = create_user(payload.email, payload.password)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+    token = create_token(user["id"], user["email"])
+    return {"user": user, "token": token}
+
+
+@app.post("/auth/login")
+async def login(payload: LoginRequest):
+    user = authenticate_user(payload.email, payload.password)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    token = create_token(user["id"], user["email"])
+    return {"user": user, "token": token}
+
+
 @app.post("/samples/upload")
-async def upload_sample(file: UploadFile, marker_gene: str = Form("COI")):
-    """Parses the uploaded reads file and stores it under a new sample id.
-    Classification happens in the separate /classify step below."""
+async def upload_sample(
+    file: UploadFile,
+    marker_gene: str = Form("COI"),
+    current_user: dict | None = Depends(get_optional_user),
+):
+    """Parses the uploaded reads file and stores it under a new sample id."""
     global _next_sample_id
     content = await file.read()
     try:
@@ -141,6 +167,7 @@ async def upload_sample(file: UploadFile, marker_gene: str = Form("COI")):
     sample_id = _next_sample_id
     _next_sample_id += 1
     SAMPLES[sample_id] = {
+        "user_id": current_user["user_id"] if current_user else None,
         "sequences": sequences,
         "marker_gene": marker_gene,
         "status": "uploaded",
@@ -171,10 +198,25 @@ async def classify_sample(sample_id: int):
     return {"sample_id": sample_id, "status": "done"}
 
 
+@app.get("/samples/mine")
+async def get_my_samples(current_user: dict = Depends(get_current_user)):
+    """Returns this user's past samples — requires login."""
+    mine = [
+        {
+            "sample_id": sid,
+            "marker_gene": s["marker_gene"],
+            "status": s["status"],
+            "reads_used": s["reads_used"],
+        }
+        for sid, s in SAMPLES.items()
+        if s["user_id"] == current_user["user_id"]
+    ]
+    return {"samples": mine}
+
+
 @app.get("/samples/{sample_id}/results")
 async def get_results(sample_id: int):
-    """Species list + confidence + conservation flags for a sample — real
-    classifier output (backend/classifier.py), aggregated per species."""
+    """Species list + confidence + conservation flags for a sample."""
     sample = SAMPLES.get(sample_id)
     if sample is None or sample["detections"] is None:
         raise HTTPException(status_code=404, detail="Sample not found or not classified yet")
@@ -188,8 +230,7 @@ async def get_results(sample_id: int):
 
 @app.get("/samples/{sample_id}/indices")
 async def get_indices(sample_id: int):
-    """Biodiversity indices for a sample, computed from real per-species
-    read counts (backend/biodiversity_indices.py)."""
+    """Biodiversity indices for a sample."""
     sample = SAMPLES.get(sample_id)
     if sample is None or sample["indices"] is None:
         raise HTTPException(status_code=404, detail="Sample not found or not classified yet")
@@ -203,8 +244,7 @@ async def get_indices(sample_id: int):
 
 @app.get("/species/{species_name}/distribution")
 async def get_distribution(species_name: str):
-    """GBIF occurrence points for the Species Explorer map. STUB points —
-    no GBIF integration wired in yet."""
+    """GBIF occurrence points for the Species Explorer map. STUB points."""
     return {
         "species": species_name,
         "occurrence_points": [
@@ -217,8 +257,7 @@ async def get_distribution(species_name: str):
 
 @app.get("/species/{species_name}/conservation-status")
 async def get_conservation_status(species_name: str):
-    """IUCN + Wildlife Act status for a species — real lookup against
-    data/component_6/species_cache.json."""
+    """IUCN + Wildlife Act status for a species."""
     flag_result = flag_species(species_name)
     return {
         "species": flag_result["scientific_name"],
@@ -232,10 +271,7 @@ async def get_conservation_status(species_name: str):
 
 @app.get("/species/{species_name}/similarity")
 async def get_species_similarity(species_name: str):
-    """Genetic similarity map (component 7) — real UMAP position + real
-    nearest neighbors by cosine similarity, from the precomputed reference
-    map in models/kmer_embedding_classifier/. Not a live per-read embedding
-    (see backend/similarity.py's module docstring)."""
+    """Genetic similarity map (component 7)."""
     result = get_similarity(species_name)
     if result is None:
         raise HTTPException(status_code=404, detail=f"'{species_name}' not found in the similarity map")
