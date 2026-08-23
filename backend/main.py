@@ -14,6 +14,7 @@ from biodiversity_indices import calculate_all_indices
 from classifier import classify_reads
 from reads_io import parse_reads
 from similarity import get_similarity
+from embedding import live_similarity
 from auth import create_user, authenticate_user, create_token, get_current_user, get_optional_user
 
 app = FastAPI(title="AquaVigil API", version="0.6.0")
@@ -53,9 +54,14 @@ def _classify_and_aggregate(sequences: list[str]):
 
     counts: Counter = Counter()
     confidence_totals: dict = defaultdict(float)
-    for c in classified:
+    # Which raw read sequences landed in each species — kept so the live
+    # embedding endpoint can embed THIS sample's own reads for a species,
+    # not just look the species name up in the precomputed reference graph.
+    reads_by_species: dict = defaultdict(list)
+    for seq, c in zip(sample_reads, classified):
         counts[c["species"]] += 1
         confidence_totals[c["species"]] += c["confidence"]
+        reads_by_species[c["species"]].append(seq)
 
     detections = []
     for species, read_count in counts.most_common():
@@ -68,7 +74,7 @@ def _classify_and_aggregate(sequences: list[str]):
         })
 
     indices = calculate_all_indices(dict(counts))
-    return detections, indices, len(sample_reads)
+    return detections, indices, len(sample_reads), dict(reads_by_species)
 
 
 @app.on_event("startup")
@@ -101,11 +107,11 @@ def seed_demo_sample():
             "user_id": None,
             "sequences": [], "marker_gene": "COI", "status": "uploaded",
             "detections": [], "indices": {"richness": 0, "shannon_index": 0.0, "evenness": 0.0},
-            "reads_used": 0,
+            "reads_used": 0, "reads_by_species": {},
         }
         return
 
-    detections, indices, reads_used = _classify_and_aggregate(sequences)
+    detections, indices, reads_used, reads_by_species = _classify_and_aggregate(sequences)
     SAMPLES[1] = {
         "user_id": None,
         "sequences": sequences,
@@ -114,6 +120,7 @@ def seed_demo_sample():
         "detections": detections,
         "indices": indices,
         "reads_used": reads_used,
+        "reads_by_species": reads_by_species,
     }
 
 
@@ -174,6 +181,7 @@ async def upload_sample(
         "detections": None,
         "indices": None,
         "reads_used": 0,
+        "reads_by_species": {},
     }
 
     return {
@@ -189,10 +197,11 @@ async def classify_sample(sample_id: int):
     if sample is None:
         raise HTTPException(status_code=404, detail="Unknown sample_id — upload a sample first")
 
-    detections, indices, reads_used = _classify_and_aggregate(sample["sequences"])
+    detections, indices, reads_used, reads_by_species = _classify_and_aggregate(sample["sequences"])
     sample["detections"] = detections
     sample["indices"] = indices
     sample["reads_used"] = reads_used
+    sample["reads_by_species"] = reads_by_species
     sample["status"] = "done"
 
     return {"sample_id": sample_id, "status": "done"}
@@ -271,8 +280,29 @@ async def get_conservation_status(species_name: str):
 
 @app.get("/species/{species_name}/similarity")
 async def get_species_similarity(species_name: str):
-    """Genetic similarity map (component 7)."""
+    """Genetic similarity map (component 7) — precomputed reference graph, looked up by name."""
     result = get_similarity(species_name)
     if result is None:
         raise HTTPException(status_code=404, detail=f"'{species_name}' not found in the similarity map")
     return result
+
+
+@app.get("/samples/{sample_id}/species/{species_name}/similarity")
+async def get_sample_species_similarity(sample_id: int, species_name: str):
+    """
+    Live genetic similarity (component 7) — embeds THIS sample's own reads
+    classified as species_name through the trained embedding model, then
+    compares that real embedding against every species' reference centroid.
+    Unlike /species/{name}/similarity above, this reflects the actual
+    sequence data in this sample, not just the species name.
+    """
+    sample = SAMPLES.get(sample_id)
+    if sample is None or sample["detections"] is None:
+        raise HTTPException(status_code=404, detail="Sample not found or not classified yet")
+
+    reads = sample.get("reads_by_species", {}).get(species_name)
+    if not reads:
+        raise HTTPException(status_code=404, detail=f"No classified reads for '{species_name}' in sample {sample_id}")
+
+    result = live_similarity(species_name, reads)
+    return {"sample_id": sample_id, **result}

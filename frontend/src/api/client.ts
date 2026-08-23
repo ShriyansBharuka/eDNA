@@ -3,6 +3,7 @@ import type {
   ConservationStatusResponse,
   DistributionResponse,
   IndicesResponse,
+  LiveSimilarityResponse,
   MarkerGene,
   ResultsResponse,
   SimilarityResponse,
@@ -53,4 +54,8 @@ export function getConservationStatus(speciesName: string): Promise<Conservation
 
 export function getSimilarity(speciesName: string): Promise<SimilarityResponse> {
   return request<SimilarityResponse>(`/species/${encodeURIComponent(speciesName)}/similarity`);
+}
+
+export function getLiveSimilarity(sampleId: number, speciesName: string): Promise<LiveSimilarityResponse> {
+  return request<LiveSimilarityResponse>(`/samples/${sampleId}/species/${encodeURIComponent(speciesName)}/similarity`);
 }

@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
-import { getSimilarity } from "../../api/client";
-import type { SimilarityResponse } from "../../api/types";
+import { getLiveSimilarity } from "../../api/client";
+import type { LiveSimilarityResponse } from "../../api/types";
 import { useAppStore } from "../../store/useAppStore";
 import GlassPanel from "../ui/GlassPanel";
 
 interface SimNode extends d3.SimulationNodeDatum {
   id: string;
   isSelected?: boolean;
+  labelWidth?: number;
 }
 interface SimLink extends d3.SimulationLinkDatum<SimNode> {
   similarity: number;
@@ -15,19 +16,20 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 
 export default function SimilarityMap() {
   const svgRef = useRef<SVGSVGElement>(null);
+  const sampleId = useAppStore((s) => s.sampleId);
   const selectedSpecies = useAppStore((s) => s.selectedSpecies);
-  const [data, setData] = useState<SimilarityResponse | null>(null);
+  const [data, setData] = useState<LiveSimilarityResponse | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!selectedSpecies) {
+    if (!selectedSpecies || sampleId === null) {
       setData(null);
       setNotFound(false);
       return;
     }
     let cancelled = false;
     setNotFound(false);
-    getSimilarity(selectedSpecies)
+    getLiveSimilarity(sampleId, selectedSpecies)
       .then((res) => {
         if (!cancelled) setData(res);
       })
@@ -40,7 +42,7 @@ export default function SimilarityMap() {
     return () => {
       cancelled = true;
     };
-  }, [selectedSpecies]);
+  }, [sampleId, selectedSpecies]);
 
   useEffect(() => {
     const svgEl = svgRef.current;
@@ -104,7 +106,7 @@ export default function SimilarityMap() {
       .attr("stroke-width", 1)
       .style("filter", (d) => (d.isSelected ? "drop-shadow(0 0 8px rgba(125,211,252,0.8))" : "none"));
 
-    node
+    const label = node
       .append("text")
       .text((d) => d.id)
       .attr("x", 14)
@@ -114,7 +116,30 @@ export default function SimilarityMap() {
       .style("font-style", "italic")
       .style("pointer-events", "none");
 
+    // Species names vary a lot in length ("Kyphosus azureus" vs.
+    // "Polyacanthonotus rissoanus"), and the force simulation can push any
+    // node near the edge — without clamping, a long label just runs off the
+    // panel. Measure each label's real rendered width once, then keep the
+    // node (and its label, which is anchored at a fixed offset from it)
+    // fully inside the viewBox on every tick.
+    label.each(function (d) {
+      d.labelWidth = (this as SVGTextElement).getBBox().width;
+    });
+
+    const PADDING = 12;
+    const LABEL_GAP = 14;
+
     simulation.on("tick", () => {
+      for (const d of nodes) {
+        const r = d.isSelected ? 16 : 10;
+        const minX = r + PADDING;
+        const maxX = Math.max(minX, width - r - PADDING - LABEL_GAP - (d.labelWidth ?? 0));
+        const minY = r + PADDING;
+        const maxY = height - r - PADDING;
+        d.x = Math.min(Math.max(d.x ?? width / 2, minX), maxX);
+        d.y = Math.min(Math.max(d.y ?? height / 2, minY), maxY);
+      }
+
       link
         .attr("x1", (d) => (d.source as SimNode).x!)
         .attr("y1", (d) => (d.source as SimNode).y!)
@@ -133,7 +158,7 @@ export default function SimilarityMap() {
     <section id="similarity" className="scroll-mt-28 w-full max-w-[80vw] mx-auto">
       <div className="flex items-baseline justify-between mb-6">
         <h3 className="font-display text-2xl font-semibold text-glow">Genetic Similarity Map</h3>
-        <span className="text-xs text-slate-500">Real UMAP + cosine-similarity graph, 500-species reference space</span>
+        <span className="text-xs text-slate-500">Live embedding of this sample's own reads vs. 500-species reference centroids</span>
       </div>
       <GlassPanel shape="wave" hover={false} className="p-4 md:p-6">
         {!selectedSpecies && (
@@ -144,11 +169,18 @@ export default function SimilarityMap() {
         {notFound && (
           <p className="text-slate-400 text-sm mb-4">No similarity data for this species yet.</p>
         )}
-        <svg ref={svgRef} className="w-full" style={{ height: 420 }} />
+        {data && data.self_similarity !== null && (
+          <p className="text-xs text-slate-300 mb-3">
+            This sample's own <span className="italic">{data.species}</span> reads ({data.query_read_count}) embed at{" "}
+            <span className="text-cyan-300 font-semibold">{(data.self_similarity * 100).toFixed(1)}%</span> similarity to
+            that species' reference centroid.
+          </p>
+        )}
+        <svg ref={svgRef} className="w-full overflow-hidden" style={{ height: 420 }} />
         <p className="mt-3 text-xs text-slate-400">
-          Node distance reflects genetic closeness, not physical location — separate from the map above. The 2D
-          layout (UMAP) preserves local neighborhoods better than absolute distance; edge thickness is the real
-          similarity score.
+          The center node is a live embedding of this sample's own reads, not a lookup by species name. Edges show
+          real cosine similarity to the nearest reference species centroids; layout is a force simulation, not a
+          literal distance.
         </p>
       </GlassPanel>
     </section>

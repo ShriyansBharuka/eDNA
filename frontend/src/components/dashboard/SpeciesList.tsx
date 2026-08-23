@@ -72,9 +72,21 @@ export default function SpeciesList() {
                   active ? "border-cyan-400/80 bg-slate-900/90 shadow-[0_0_24px_rgba(56,189,248,0.25)]" : ""
                 }`}
               >
-                <button
-                  type="button"
+                {/* A <div role="button"> here, not a real <button> — ConservationBadge
+                    below is itself a clickable button, and HTML doesn't allow a
+                    <button> nested inside another <button> (invalid DOM, and browsers
+                    handle the nested control's focus/click inconsistently). This stays
+                    keyboard-accessible via tabIndex + onKeyDown instead. */}
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => selectSpecies(active ? null : d.species)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      selectSpecies(active ? null : d.species);
+                    }
+                  }}
                   className="flex flex-col md:flex-row md:items-center justify-between gap-3 text-left w-full cursor-pointer"
                 >
                   <div className="flex-1 min-w-0">
@@ -95,7 +107,7 @@ export default function SpeciesList() {
                     <ConfidenceBadge confidence={d.confidence} />
                     <ConservationBadge flag={d.conservation_flag} />
                   </div>
-                </button>
+                </div>
 
                 {/* Expanded Species Analysis & Researcher Details */}
                 {active && (

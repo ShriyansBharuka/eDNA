@@ -10,6 +10,7 @@ no owner), but a logged-in user's samples are tied to their account so
 """
 
 import os
+import secrets
 import sqlite3
 from datetime import datetime, timedelta, timezone
 
@@ -17,7 +18,13 @@ import jwt
 from fastapi import Header, HTTPException
 from passlib.context import CryptContext
 
-SECRET_KEY = os.environ.get("AQUAVIGIL_SECRET_KEY", "aquavigil-dev-secret-change-in-production")
+# No hardcoded fallback here on purpose — a fixed default secret sitting in a
+# public repo lets anyone forge a valid token for any user_id. Set
+# AQUAVIGIL_SECRET_KEY in the deploy environment (e.g. Render) for tokens
+# that survive a restart; without it, we generate a random one per process
+# start, which just means existing sessions get invalidated on restart —
+# no worse than what the ephemeral SQLite/in-memory sample store already do.
+SECRET_KEY = os.environ.get("AQUAVIGIL_SECRET_KEY") or secrets.token_hex(32)
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = 24
 

@@ -23,16 +23,16 @@ export default function Navbar() {
 
         {/* Evenly Spaced Nav Options */}
         <div className="hidden items-center justify-evenly gap-1.5 text-xs sm:text-sm text-slate-200 lg:flex flex-1 mx-4">
-          <a href="#species" className="glass-hover rounded-full px-3 py-1.5 transition-all hover:text-cyan-300">
+          <a href="#assessment" className="glass-hover rounded-full px-3 py-1.5 text-center transition-all hover:text-cyan-300">
             Biodiversity Assessment
           </a>
-          <a href="#discovered" className="glass-hover rounded-full px-3 py-1.5 transition-all hover:text-cyan-300">
+          <a href="#discovered" className="glass-hover rounded-full px-3 py-1.5 text-center transition-all hover:text-cyan-300">
             Discovered
           </a>
-          <a href="#distribution" className="glass-hover rounded-full px-3 py-1.5 transition-all hover:text-cyan-300">
+          <a href="#distribution" className="glass-hover rounded-full px-3 py-1.5 text-center transition-all hover:text-cyan-300">
             Distribution Map
           </a>
-          <a href="#similarity" className="glass-hover rounded-full px-3 py-1.5 transition-all hover:text-cyan-300">
+          <a href="#similarity" className="glass-hover rounded-full px-3 py-1.5 text-center transition-all hover:text-cyan-300">
             Similarity Map
           </a>
           <button
@@ -44,7 +44,7 @@ export default function Navbar() {
           </button>
           <button
             onClick={() => setIucnOpen(true)}
-            className="glass-hover rounded-full px-3 py-1.5 transition-all hover:text-cyan-300"
+            className="glass-hover rounded-full px-3 py-1.5 text-center transition-all hover:text-cyan-300"
           >
             IUCN Guidelines
           </button>

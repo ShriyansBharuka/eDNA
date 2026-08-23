@@ -7,3 +7,9 @@ scikit-learn==1.8.0
 joblib==1.5.3
 email-validator==2.3.0
 bcrypt==4.0.1
+numpy
+# CPU-only wheel — the default "torch" PyPI package bundles CUDA and is
+# ~10x larger, which is both slow to build and too much for Render's free
+# tier. This index has the small CPU-only build instead.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.6.0
