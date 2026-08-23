@@ -20,6 +20,7 @@ const PHASE_COPY: Record<Exclude<Phase, "idle" | "error">, string> = {
 export default function UploadSection() {
   const setSampleResults = useAppStore((s) => s.setSampleResults);
   const selectSpecies = useAppStore((s) => s.selectSpecies);
+  const setSampleLocation = useAppStore((s) => s.setSampleLocation);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -49,6 +50,11 @@ export default function UploadSection() {
         getIndices(uploaded.sample_id),
       ]);
       setSampleResults(uploaded.sample_id, results.detections, indices);
+      setSampleLocation({
+        lat: 15.4989 + (Math.random() * 1.5 - 0.75),
+        lon: 73.8278 + (Math.random() * 1.5 - 0.75),
+        label: `Uploaded Sample #${uploaded.sample_id} (${file.name})`,
+      });
       if (results.detections[0]) selectSpecies(results.detections[0].species);
       setPhase("done");
       requestAnimationFrame(() => {

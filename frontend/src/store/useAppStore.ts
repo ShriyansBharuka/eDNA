@@ -17,6 +17,9 @@ interface AppState {
   mapFocus: MapFocus | null;
   focusOnMap: (focus: MapFocus | null) => void;
 
+  sampleLocation: MapFocus;
+  setSampleLocation: (loc: MapFocus) => void;
+
   authOpen: boolean;
   iucnOpen: boolean;
   endangeredOpen: boolean;
@@ -48,6 +51,9 @@ export const useAppStore = create<AppState>((set) => ({
 
   mapFocus: null,
   focusOnMap: (focus) => set({ mapFocus: focus }),
+
+  sampleLocation: { lat: 15.4989, lon: 73.8278, label: "Sample #1 — Mandovi Estuary / Goa Coast (15.5°N, 73.8°E)" },
+  setSampleLocation: (loc) => set({ sampleLocation: loc }),
 
   authOpen: false,
   iucnOpen: false,
