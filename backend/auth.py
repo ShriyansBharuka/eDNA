@@ -1,3 +1,13 @@
+"""
+Authentication for AquaVigil.
+
+Handles signup, login, password hashing, and JWT token creation/verification.
+Uses SQLite (the same aquavigil.db everything else uses) for the users table.
+
+Login is optional app-wide: guests can use the app fully (samples just have
+no owner), but a logged-in user's samples are tied to their account so
+/samples/mine can show their history after logging back in.
+"""
 
 import os
 import sqlite3
@@ -7,9 +17,6 @@ import jwt
 from fastapi import Header, HTTPException
 from passlib.context import CryptContext
 
-# In a real production app this would come from an environment variable.
-# For this project, a fixed secret is fine since it's a hackathon demo,
-# not something protecting real sensitive data.
 SECRET_KEY = os.environ.get("AQUAVIGIL_SECRET_KEY", "aquavigil-dev-secret-change-in-production")
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = 24
@@ -91,9 +98,7 @@ def authenticate_user(email: str, password: str) -> dict | None:
 
 def get_current_user(authorization: str = Header(None)) -> dict:
     """
-    FastAPI dependency — attach with Depends(get_current_user) on any route
-    that should require login. Reads the token from the Authorization header
-    (format: "Bearer <token>"), verifies it, and returns {"user_id", "email"}.
+    Use with Depends() on routes that REQUIRE login (e.g. /samples/mine).
     Raises 401 if missing, malformed, or expired/invalid.
     """
     if not authorization or not authorization.startswith("Bearer "):
@@ -103,5 +108,23 @@ def get_current_user(authorization: str = Header(None)) -> dict:
     payload = decode_token(token)
     if payload is None:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    return {"user_id": payload["user_id"], "email": payload["email"]}
+
+
+def get_optional_user(authorization: str = Header(None)) -> dict | None:
+    """
+    Use with Depends() on routes that work for BOTH guests and logged-in
+    users (e.g. /samples/upload). Returns the user dict if a valid token is
+    present, or None if there's no token / it's invalid — never raises,
+    so guests can still use these routes freely.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+
+    token = authorization.removeprefix("Bearer ").strip()
+    payload = decode_token(token)
+    if payload is None:
+        return None
 
     return {"user_id": payload["user_id"], "email": payload["email"]}
