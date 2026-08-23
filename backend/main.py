@@ -9,13 +9,17 @@ from pydantic import BaseModel, EmailStr
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "data", "component_6"))
 sys.path.append(os.path.dirname(__file__))
-from conservation_flag import flag_species
-from biodiversity_indices import calculate_all_indices
-from classifier import classify_reads
-from reads_io import parse_reads
-from similarity import get_similarity
-from embedding import live_similarity
-from auth import create_user, authenticate_user, create_token, get_current_user, get_optional_user
+# These have to come after the sys.path.append() calls above — conservation_flag
+# lives outside the normal import path and won't resolve otherwise — so linters
+# flag them as "E402: module level import not at top of file". That's a real
+# ordering requirement here, not a mistake; noqa silences the false positive.
+from conservation_flag import flag_species  # noqa: E402
+from biodiversity_indices import calculate_all_indices  # noqa: E402
+from classifier import classify_reads  # noqa: E402
+from reads_io import parse_reads  # noqa: E402
+from similarity import get_similarity  # noqa: E402
+from embedding import live_similarity  # noqa: E402
+from auth import create_user, authenticate_user, create_token, get_current_user, get_optional_user  # noqa: E402
 
 app = FastAPI(title="AquaVigil API", version="0.6.0")
 

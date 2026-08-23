@@ -49,41 +49,50 @@ export default function DiscoveredReads() {
             above the threshold.
           </p>
         ) : (
-          <div className="flex flex-col gap-3">
-            {discovered.map((r) => (
-              <div
-                key={r.nearest_species}
-                className="glass glass-hover flex flex-col gap-4 rounded-2xl px-5 py-4 md:flex-row md:items-center"
-                style={active ? { borderColor: "rgba(244,114,182,0.7)", boxShadow: "0 0 28px rgba(244,114,182,0.3)" } : undefined}
+          <>
+            {/* eDNA reads don't carry individual GPS coordinates — only the
+                whole sample has one real collection point. One shared action
+                for the panel is honest about that; a "locate" button on every
+                row would wrongly imply each read has its own distinct spot. */}
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-3">
+              <p className="text-xs text-slate-400">
+                All {discovered.reduce((sum, r) => sum + r.read_count, 0)} of these reads came from this sample's
+                single collection point — <span className="text-slate-300">{sampleLocation.label}</span>.
+              </p>
+              <button
+                onClick={locate}
+                className="glass glass-hover inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
+                style={active ? { color: "#f9a8d4", borderColor: "rgba(244,114,182,0.7)", boxShadow: "0 0 18px rgba(244,114,182,0.3)" } : { color: "#f9a8d4", borderColor: "rgba(244,114,182,0.45)" }}
               >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {markerGene && (
-                      <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] tracking-wide text-slate-300">
-                        {markerGene}
-                      </span>
-                    )}
-                    <span className="text-xs text-slate-500">{r.read_count} reads</span>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Closest reference: <span className="italic text-slate-300">{r.nearest_species}</span> ·{" "}
-                    {Math.round(r.nearest_identity * 100)}% identity — below the call threshold
-                  </p>
-                </div>
+                <MarkerPin />
+                Locate sample on map
+              </button>
+            </div>
 
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={locate}
-                    className="glass glass-hover inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
-                    style={{ color: "#f9a8d4", borderColor: "rgba(244,114,182,0.45)" }}
-                  >
-                    <MarkerPin />
-                    Locate sample on map
-                  </button>
+            <div className="flex flex-col gap-3">
+              {discovered.map((r) => (
+                <div
+                  key={r.nearest_species}
+                  className="glass flex flex-col gap-4 rounded-2xl px-5 py-4 md:flex-row md:items-center"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {markerGene && (
+                        <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] tracking-wide text-slate-300">
+                          {markerGene}
+                        </span>
+                      )}
+                      <span className="text-xs text-slate-500">{r.read_count} reads</span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Closest reference: <span className="italic text-slate-300">{r.nearest_species}</span> ·{" "}
+                      {Math.round(r.nearest_identity * 100)}% identity — below the call threshold
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </GlassPanel>
     </section>
