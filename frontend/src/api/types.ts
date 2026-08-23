@@ -78,4 +78,23 @@ export interface LiveSimilarityResponse {
   neighbors: LiveSimilarityNeighbor[];
 }
 
+export interface SampleReadsResponse {
+  sample_id: number;
+  reads_by_species: Record<string, string[]>;
+}
+
+export interface UnmatchedGroup {
+  nearest_species: string;
+  nearest_identity: number;
+  read_count: number;
+}
+
+export interface DiscoveredResponse {
+  sample_id: number;
+  marker_gene: MarkerGene;
+  confidence_threshold: number;
+  unmatched: UnmatchedGroup[];
+  note: string;
+}
+
 export type MarkerGene = "12S" | "16S" | "COI";

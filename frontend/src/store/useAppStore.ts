@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Detection, IndicesResponse } from "../api/types";
+import type { Detection, IndicesResponse, MarkerGene, UnmatchedGroup } from "../api/types";
 
 interface AppState {
   heroDone: boolean;
@@ -9,6 +9,18 @@ interface AppState {
   detections: Detection[];
   indices: IndicesResponse | null;
   setSampleResults: (sampleId: number, detections: Detection[], indices: IndicesResponse | null) => void;
+
+  /** Real raw reads for the current sample, grouped by classified species —
+   * used so the eDNA barcode sequence shown/exported per species is a real
+   * sequenced read, not a fabricated one. */
+  readsBySpecies: Record<string, string[]>;
+  setReadsBySpecies: (reads: Record<string, string[]>) => void;
+
+  /** Real low-confidence reads for the current sample, grouped by nearest
+   * (rejected) species guess — powers the Discovered panel. */
+  discovered: UnmatchedGroup[];
+  discoveredMarkerGene: MarkerGene | null;
+  setDiscovered: (unmatched: UnmatchedGroup[], markerGene: MarkerGene) => void;
 
   selectedSpecies: string | null;
   selectSpecies: (species: string | null) => void;
@@ -45,6 +57,13 @@ export const useAppStore = create<AppState>((set) => ({
   detections: [],
   indices: null,
   setSampleResults: (sampleId, detections, indices) => set({ sampleId, detections, indices }),
+
+  readsBySpecies: {},
+  setReadsBySpecies: (reads) => set({ readsBySpecies: reads }),
+
+  discovered: [],
+  discoveredMarkerGene: null,
+  setDiscovered: (unmatched, markerGene) => set({ discovered: unmatched, discoveredMarkerGene: markerGene }),
 
   selectedSpecies: null,
   selectSpecies: (species) => set({ selectedSpecies: species }),

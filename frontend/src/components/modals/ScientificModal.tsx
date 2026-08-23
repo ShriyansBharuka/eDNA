@@ -8,14 +8,17 @@ import ConfidenceBadge from "../ui/ConfidenceBadge";
 export default function ScientificModal() {
   const detection = useAppStore((s) => s.scientificModalDetection);
   const setDetection = useAppStore((s) => s.setScientificModalDetection);
+  const readsBySpecies = useAppStore((s) => s.readsBySpecies);
   const [copied, setCopied] = useState(false);
 
   if (!detection) return null;
 
-  const details = getBioinformaticsData(detection.species, detection.read_count, detection.confidence);
+  const realSequence = readsBySpecies[detection.species]?.[0];
+  const details = getBioinformaticsData(detection.species, detection.read_count, detection.confidence, 5000, realSequence);
   const iucn = resolveIucnCategory(detection.conservation_flag);
 
   const copySequence = () => {
+    if (!details.isRealSequence) return;
     navigator.clipboard.writeText(details.sequence);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -64,14 +67,14 @@ export default function ScientificModal() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => exportAsFasta(detection)}
+                onClick={() => exportAsFasta(detection, realSequence)}
                 className="glass glass-hover rounded-xl px-3.5 py-2 text-xs font-semibold text-emerald-300 border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center gap-1.5"
               >
                 🧬 Download FASTA
               </button>
               <button
                 type="button"
-                onClick={() => exportAsJson(detection)}
+                onClick={() => exportAsJson(detection, realSequence)}
                 className="glass glass-hover rounded-xl px-3.5 py-2 text-xs font-semibold text-cyan-300 border-cyan-500/30 hover:border-cyan-400 transition-all flex items-center gap-1.5"
               >
                 📄 Download JSON
@@ -166,6 +169,12 @@ export default function ScientificModal() {
                 <p className="text-[11px] text-slate-400 mt-0.5">
                   Target Marker: <span className="text-slate-200 font-medium">{details.markerGene}</span> &bull; Primer:{" "}
                   <span className="text-slate-200 font-medium">{details.primerSet}</span>
+                  {details.isRealSequence && (
+                    <>
+                      {" "}
+                      &bull; <span className="text-emerald-400 font-medium">one of this sample's own classified reads</span>
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -185,19 +194,23 @@ export default function ScientificModal() {
 
             {/* Nucleotide Color Grid */}
             <div className="rounded-xl bg-black/80 p-4 border border-white/10 font-mono text-xs leading-relaxed tracking-wider break-all max-h-36 overflow-y-auto select-all">
-              {details.sequence.split("").map((base, idx) => {
-                let colorClass = "text-slate-300";
-                if (base === "A") colorClass = "text-emerald-400 font-bold";
-                else if (base === "T") colorClass = "text-amber-400 font-bold";
-                else if (base === "G") colorClass = "text-cyan-400 font-bold";
-                else if (base === "C") colorClass = "text-fuchsia-400 font-bold";
+              {details.isRealSequence ? (
+                details.sequence.split("").map((base, idx) => {
+                  let colorClass = "text-slate-300";
+                  if (base === "A") colorClass = "text-emerald-400 font-bold";
+                  else if (base === "T") colorClass = "text-amber-400 font-bold";
+                  else if (base === "G") colorClass = "text-cyan-400 font-bold";
+                  else if (base === "C") colorClass = "text-fuchsia-400 font-bold";
 
-                return (
-                  <span key={idx} className={`${colorClass} px-[1px]`}>
-                    {base}
-                  </span>
-                );
-              })}
+                  return (
+                    <span key={idx} className={`${colorClass} px-[1px]`}>
+                      {base}
+                    </span>
+                  );
+                })
+              ) : (
+                <span className="text-slate-500 italic">Loading this sample's real read…</span>
+              )}
             </div>
 
             <div className="mt-2.5 flex items-center gap-4 text-[10px] font-mono text-slate-400">

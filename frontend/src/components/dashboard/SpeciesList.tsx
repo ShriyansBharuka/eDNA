@@ -16,6 +16,7 @@ export default function SpeciesList() {
   const selectedSpecies = useAppStore((s) => s.selectedSpecies);
   const selectSpecies = useAppStore((s) => s.selectSpecies);
   const setScientificModalDetection = useAppStore((s) => s.setScientificModalDetection);
+  const readsBySpecies = useAppStore((s) => s.readsBySpecies);
 
   return (
     <GlassPanel shape="round" hover={false} className="p-6 md:p-8">
@@ -33,7 +34,7 @@ export default function SpeciesList() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => exportAllFasta(detections)}
+              onClick={() => exportAllFasta(detections, readsBySpecies)}
               className="glass glass-hover rounded-xl px-3 py-1.5 text-xs font-semibold text-emerald-300 border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center gap-1.5"
               title="Download FASTA file for all detected species"
             >
@@ -41,7 +42,7 @@ export default function SpeciesList() {
             </button>
             <button
               type="button"
-              onClick={() => exportAsCsv(detections)}
+              onClick={() => exportAsCsv(detections, readsBySpecies)}
               className="glass glass-hover rounded-xl px-3 py-1.5 text-xs font-semibold text-cyan-300 border-cyan-500/30 hover:border-cyan-400 transition-all flex items-center gap-1.5"
               title="Export Tabular CSV Report"
             >
@@ -63,7 +64,8 @@ export default function SpeciesList() {
           {detections.map((d) => {
             const active = d.species === selectedSpecies;
             const iucn = resolveIucnCategory(d.conservation_flag);
-            const bioDetails = getBioinformaticsData(d.species, d.read_count, d.confidence);
+            const realSequence = readsBySpecies[d.species]?.[0];
+            const bioDetails = getBioinformaticsData(d.species, d.read_count, d.confidence, 5000, realSequence);
 
             return (
               <div
@@ -153,15 +155,23 @@ export default function SpeciesList() {
 
                       {/* Sequence Highlight */}
                       <div className="rounded-lg bg-black/70 p-2.5 font-mono text-[11px] tracking-widest text-slate-300 overflow-x-auto select-all">
-                        {bioDetails.sequence.slice(0, 100).split("").map((base, i) => {
-                          let c = "text-slate-300";
-                          if (base === "A") c = "text-emerald-400 font-bold";
-                          else if (base === "T") c = "text-amber-400 font-bold";
-                          else if (base === "G") c = "text-cyan-400 font-bold";
-                          else if (base === "C") c = "text-fuchsia-400 font-bold";
-                          return <span key={i} className={c}>{base}</span>;
-                        })}
-                        <span className="text-slate-500 font-sans italic ml-1">... [full sequence in download]</span>
+                        {bioDetails.isRealSequence ? (
+                          <>
+                            {bioDetails.sequence.slice(0, 100).split("").map((base, i) => {
+                              let c = "text-slate-300";
+                              if (base === "A") c = "text-emerald-400 font-bold";
+                              else if (base === "T") c = "text-amber-400 font-bold";
+                              else if (base === "G") c = "text-cyan-400 font-bold";
+                              else if (base === "C") c = "text-fuchsia-400 font-bold";
+                              return <span key={i} className={c}>{base}</span>;
+                            })}
+                            {bioDetails.sequenceLength > 100 && (
+                              <span className="text-slate-500 font-sans italic ml-1">... [full sequence in download]</span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-slate-500 font-sans italic">Loading this sample's real read…</span>
+                        )}
                       </div>
                     </div>
 
@@ -170,14 +180,14 @@ export default function SpeciesList() {
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => exportAsFasta(d)}
+                          onClick={() => exportAsFasta(d, realSequence)}
                           className="glass glass-hover rounded-xl px-3 py-1.5 text-xs font-semibold text-emerald-300 border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center gap-1"
                         >
                           🧬 Download FASTA
                         </button>
                         <button
                           type="button"
-                          onClick={() => exportAsJson(d)}
+                          onClick={() => exportAsJson(d, realSequence)}
                           className="glass glass-hover rounded-xl px-3 py-1.5 text-xs font-semibold text-cyan-300 border-cyan-500/30 hover:border-cyan-400 transition-all flex items-center gap-1"
                         >
                           📄 Download JSON

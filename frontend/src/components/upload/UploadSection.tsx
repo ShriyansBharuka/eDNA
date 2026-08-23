@@ -1,5 +1,5 @@
 import { DragEvent, FormEvent, useRef, useState } from "react";
-import { classifySample, getIndices, getResults, uploadSample } from "../../api/client";
+import { classifySample, getDiscovered, getIndices, getResults, getSampleReads, uploadSample } from "../../api/client";
 import type { MarkerGene } from "../../api/types";
 import { useAppStore } from "../../store/useAppStore";
 
@@ -19,6 +19,8 @@ const PHASE_COPY: Record<Exclude<Phase, "idle" | "error">, string> = {
 
 export default function UploadSection() {
   const setSampleResults = useAppStore((s) => s.setSampleResults);
+  const setReadsBySpecies = useAppStore((s) => s.setReadsBySpecies);
+  const setDiscovered = useAppStore((s) => s.setDiscovered);
   const selectSpecies = useAppStore((s) => s.selectSpecies);
   const setSampleLocation = useAppStore((s) => s.setSampleLocation);
 
@@ -45,11 +47,15 @@ export default function UploadSection() {
       const uploaded = await uploadSample(file, markerGene);
       setPhase("classifying");
       await classifySample(uploaded.sample_id);
-      const [results, indices] = await Promise.all([
+      const [results, indices, reads, discovered] = await Promise.all([
         getResults(uploaded.sample_id),
         getIndices(uploaded.sample_id),
+        getSampleReads(uploaded.sample_id),
+        getDiscovered(uploaded.sample_id),
       ]);
       setSampleResults(uploaded.sample_id, results.detections, indices);
+      setReadsBySpecies(reads.reads_by_species);
+      setDiscovered(discovered.unmatched, discovered.marker_gene);
       setSampleLocation({
         lat: 15.4989 + (Math.random() * 1.5 - 0.75),
         lon: 73.8278 + (Math.random() * 1.5 - 0.75),

@@ -1,11 +1,13 @@
 import type {
   ClassifySampleResponse,
   ConservationStatusResponse,
+  DiscoveredResponse,
   DistributionResponse,
   IndicesResponse,
   LiveSimilarityResponse,
   MarkerGene,
   ResultsResponse,
+  SampleReadsResponse,
   SimilarityResponse,
   UploadSampleResponse,
 } from "./types";
@@ -42,6 +44,14 @@ export function getResults(sampleId: number): Promise<ResultsResponse> {
 
 export function getIndices(sampleId: number): Promise<IndicesResponse> {
   return request<IndicesResponse>(`/samples/${sampleId}/indices`);
+}
+
+export function getSampleReads(sampleId: number): Promise<SampleReadsResponse> {
+  return request<SampleReadsResponse>(`/samples/${sampleId}/reads`);
+}
+
+export function getDiscovered(sampleId: number): Promise<DiscoveredResponse> {
+  return request<DiscoveredResponse>(`/samples/${sampleId}/discovered`);
 }
 
 export function getDistribution(speciesName: string): Promise<DistributionResponse> {

@@ -2,10 +2,11 @@
 Real species classifier (component 3, classical baseline).
 
 The full BarcodeBERT + BiLSTM + self-attention architecture lives in
-../Model/ but has no trained checkpoint yet — only this 5-mer TF-IDF +
-Logistic Regression baseline does (Model/results/final_results.json:
-98.66% test accuracy across 500 species, trained on simulated_data/
-manifest.csv). This is what's real and load-bearing today.
+../models/transformer/ but has no trained checkpoint yet — only this
+5-mer TF-IDF + Logistic Regression baseline does
+(models/transformer/results/final_results.json: 98.66% test accuracy
+across 500 species, trained on simulated_data/manifest.csv). This is
+what's real and load-bearing today.
 
 Loaded once at import (same lazy-load-at-module-scope pattern
 species_counts.py already uses), so importing this module has a real
@@ -17,7 +18,7 @@ import os
 
 import joblib
 
-_CHECKPOINT_DIR = os.path.join(os.path.dirname(__file__), "..", "Model", "checkpoints")
+_CHECKPOINT_DIR = os.path.join(os.path.dirname(__file__), "..", "models", "transformer", "checkpoints")
 
 _vectorizer = joblib.load(os.path.join(_CHECKPOINT_DIR, "tfidf_5mer_vectorizer.pkl"))
 _classifier = joblib.load(os.path.join(_CHECKPOINT_DIR, "kmer_logistic_regression.pkl"))

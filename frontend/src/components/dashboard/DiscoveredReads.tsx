@@ -1,5 +1,3 @@
-import { MOCK_UNMATCHED_READS } from "../../lib/mockUnmatched";
-import type { UnmatchedRead } from "../../lib/mockUnmatched";
 import { useAppStore } from "../../store/useAppStore";
 import GlassPanel from "../ui/GlassPanel";
 
@@ -13,21 +11,30 @@ function MarkerPin() {
 }
 
 export default function DiscoveredReads() {
+  const discovered = useAppStore((s) => s.discovered);
+  const markerGene = useAppStore((s) => s.discoveredMarkerGene);
   const focusOnMap = useAppStore((s) => s.focusOnMap);
   const mapFocus = useAppStore((s) => s.mapFocus);
+  const sampleLocation = useAppStore((s) => s.sampleLocation);
 
-  const locate = (r: UnmatchedRead) => {
-    focusOnMap({ lat: r.lat, lon: r.lon, label: `${r.id} — ${r.site}` });
+  // There's no per-read GPS in eDNA data, only a per-SAMPLE collection
+  // point — so unlike the old mock (which faked a distinct site per read),
+  // every "Locate on map" here honestly points at the same real place:
+  // wherever this sample was actually collected.
+  const locate = () => {
+    focusOnMap(sampleLocation);
     requestAnimationFrame(() => {
       document.getElementById("distribution")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
+  const active = mapFocus?.label === sampleLocation.label;
+
   return (
     <section id="discovered" className="scroll-mt-28">
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-display text-2xl font-semibold text-glow">Discovered</h3>
-        <span className="text-xs text-slate-500">Mock set — pending the unmatched-reads endpoint</span>
+        <span className="text-xs text-slate-500">Real reads below the classifier's confidence threshold</span>
       </div>
 
       <p className="mb-6 max-w-2xl text-sm text-slate-400">
@@ -36,21 +43,26 @@ export default function DiscoveredReads() {
       </p>
 
       <GlassPanel shape="round" hover={false} className="p-6 md:p-8">
-        <div className="flex flex-col gap-3">
-          {MOCK_UNMATCHED_READS.map((r) => {
-            const active = mapFocus?.label.startsWith(r.id) ?? false;
-            return (
+        {discovered.length === 0 ? (
+          <p className="text-slate-400 text-sm py-6 text-center">
+            No low-confidence reads in this sample — every classified read matched a known species with confidence
+            above the threshold.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {discovered.map((r) => (
               <div
-                key={r.id}
+                key={r.nearest_species}
                 className="glass glass-hover flex flex-col gap-4 rounded-2xl px-5 py-4 md:flex-row md:items-center"
                 style={active ? { borderColor: "rgba(244,114,182,0.7)", boxShadow: "0 0 28px rgba(244,114,182,0.3)" } : undefined}
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-sm font-medium text-slate-100">{r.id}</span>
-                    <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] tracking-wide text-slate-300">
-                      {r.marker}
-                    </span>
+                    {markerGene && (
+                      <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] tracking-wide text-slate-300">
+                        {markerGene}
+                      </span>
+                    )}
                     <span className="text-xs text-slate-500">{r.read_count} reads</span>
                   </div>
                   <p className="mt-1 text-xs text-slate-400">
@@ -60,20 +72,19 @@ export default function DiscoveredReads() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <span className="hidden text-xs text-slate-500 lg:inline">{r.site}</span>
                   <button
-                    onClick={() => locate(r)}
+                    onClick={locate}
                     className="glass glass-hover inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
                     style={{ color: "#f9a8d4", borderColor: "rgba(244,114,182,0.45)" }}
                   >
                     <MarkerPin />
-                    Locate on map
+                    Locate sample on map
                   </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </GlassPanel>
     </section>
   );

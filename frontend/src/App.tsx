@@ -17,7 +17,7 @@ import IucnDrawer from "./components/modals/IucnDrawer";
 import EndangeredModal from "./components/modals/EndangeredModal";
 import LiveStatusWidget from "./components/decor/LiveStatusWidget";
 import ScientificModal from "./components/modals/ScientificModal";
-import { getIndices, getResults } from "./api/client";
+import { getDiscovered, getIndices, getResults, getSampleReads } from "./api/client";
 import { useAppStore } from "./store/useAppStore";
 
 // Demo sample shown on first load so the dashboard isn't a wall of empty
@@ -27,15 +27,24 @@ const DEMO_SAMPLE_ID = 1;
 
 export default function App() {
   const setSampleResults = useAppStore((s) => s.setSampleResults);
+  const setReadsBySpecies = useAppStore((s) => s.setReadsBySpecies);
+  const setDiscovered = useAppStore((s) => s.setDiscovered);
   const selectSpecies = useAppStore((s) => s.selectSpecies);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [results, indices] = await Promise.all([getResults(DEMO_SAMPLE_ID), getIndices(DEMO_SAMPLE_ID)]);
+        const [results, indices, reads, discovered] = await Promise.all([
+          getResults(DEMO_SAMPLE_ID),
+          getIndices(DEMO_SAMPLE_ID),
+          getSampleReads(DEMO_SAMPLE_ID),
+          getDiscovered(DEMO_SAMPLE_ID),
+        ]);
         if (cancelled) return;
         setSampleResults(DEMO_SAMPLE_ID, results.detections, indices);
+        setReadsBySpecies(reads.reads_by_species);
+        setDiscovered(discovered.unmatched, discovered.marker_gene);
         if (results.detections[0]) selectSpecies(results.detections[0].species);
       } catch {
         // Backend not reachable — dashboard just falls back to its empty state.
@@ -44,7 +53,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [setSampleResults, selectSpecies]);
+  }, [setSampleResults, setReadsBySpecies, setDiscovered, selectSpecies]);
 
   return (
     <div id="top" className="relative">

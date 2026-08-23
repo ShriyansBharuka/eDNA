@@ -36,6 +36,13 @@ SEED_FASTQ_PATH = os.path.join(os.path.dirname(__file__), "..", "simulated_data"
 MAX_READS_PER_CLASSIFY = 2000
 SEED_READ_COUNT = 100
 
+# The classifier always returns a top guess for every read — softmax has no
+# built-in "I don't know". Reads below this confidence are pulled out of the
+# normal species detections (and out of the biodiversity indices, which are
+# computed from confident calls only) and shown in the Discovered panel
+# instead of being force-assigned a species nobody actually believes.
+UNMATCHED_CONFIDENCE_THRESHOLD = 0.5
+
 SAMPLES: dict[int, dict] = {}
 _next_sample_id = 2
 
@@ -58,10 +65,22 @@ def _classify_and_aggregate(sequences: list[str]):
     # embedding endpoint can embed THIS sample's own reads for a species,
     # not just look the species name up in the precomputed reference graph.
     reads_by_species: dict = defaultdict(list)
+
+    # Reads whose top-call confidence didn't clear the threshold — grouped
+    # by their (rejected) nearest guess, for the Discovered panel. Kept out
+    # of counts/reads_by_species entirely, so they don't inflate the
+    # biodiversity indices or the similarity map with low-confidence calls.
+    unmatched_counts: Counter = Counter()
+    unmatched_confidence_totals: dict = defaultdict(float)
+
     for seq, c in zip(sample_reads, classified):
-        counts[c["species"]] += 1
-        confidence_totals[c["species"]] += c["confidence"]
-        reads_by_species[c["species"]].append(seq)
+        if c["confidence"] >= UNMATCHED_CONFIDENCE_THRESHOLD:
+            counts[c["species"]] += 1
+            confidence_totals[c["species"]] += c["confidence"]
+            reads_by_species[c["species"]].append(seq)
+        else:
+            unmatched_counts[c["species"]] += 1
+            unmatched_confidence_totals[c["species"]] += c["confidence"]
 
     detections = []
     for species, read_count in counts.most_common():
@@ -73,8 +92,16 @@ def _classify_and_aggregate(sequences: list[str]):
             "conservation_flag": flag_result["flag_reason"] if flag_result["is_flagged"] else None,
         })
 
+    unmatched = []
+    for species, read_count in unmatched_counts.most_common():
+        unmatched.append({
+            "nearest_species": species,
+            "nearest_identity": round(unmatched_confidence_totals[species] / read_count, 3),
+            "read_count": read_count,
+        })
+
     indices = calculate_all_indices(dict(counts))
-    return detections, indices, len(sample_reads), dict(reads_by_species)
+    return detections, indices, len(sample_reads), dict(reads_by_species), unmatched
 
 
 @app.on_event("startup")
@@ -107,11 +134,11 @@ def seed_demo_sample():
             "user_id": None,
             "sequences": [], "marker_gene": "COI", "status": "uploaded",
             "detections": [], "indices": {"richness": 0, "shannon_index": 0.0, "evenness": 0.0},
-            "reads_used": 0, "reads_by_species": {},
+            "reads_used": 0, "reads_by_species": {}, "unmatched": [],
         }
         return
 
-    detections, indices, reads_used, reads_by_species = _classify_and_aggregate(sequences)
+    detections, indices, reads_used, reads_by_species, unmatched = _classify_and_aggregate(sequences)
     SAMPLES[1] = {
         "user_id": None,
         "sequences": sequences,
@@ -121,6 +148,7 @@ def seed_demo_sample():
         "indices": indices,
         "reads_used": reads_used,
         "reads_by_species": reads_by_species,
+        "unmatched": unmatched,
     }
 
 
@@ -182,6 +210,7 @@ async def upload_sample(
         "indices": None,
         "reads_used": 0,
         "reads_by_species": {},
+        "unmatched": [],
     }
 
     return {
@@ -197,11 +226,12 @@ async def classify_sample(sample_id: int):
     if sample is None:
         raise HTTPException(status_code=404, detail="Unknown sample_id — upload a sample first")
 
-    detections, indices, reads_used, reads_by_species = _classify_and_aggregate(sample["sequences"])
+    detections, indices, reads_used, reads_by_species, unmatched = _classify_and_aggregate(sample["sequences"])
     sample["detections"] = detections
     sample["indices"] = indices
     sample["reads_used"] = reads_used
     sample["reads_by_species"] = reads_by_species
+    sample["unmatched"] = unmatched
     sample["status"] = "done"
 
     return {"sample_id": sample_id, "status": "done"}
@@ -235,6 +265,42 @@ async def get_results(sample_id: int):
         "detections": sample["detections"],
         "note": f"classified {sample['reads_used']} reads via the 5-mer TF-IDF + logistic regression baseline",
     }
+
+
+@app.get("/samples/{sample_id}/discovered")
+async def get_discovered(sample_id: int):
+    """
+    Reads whose top classifier confidence fell below
+    UNMATCHED_CONFIDENCE_THRESHOLD — real low-confidence calls that were
+    kept OUT of the normal species detections and indices, grouped by
+    their nearest (rejected) guess, for the Discovered panel.
+    """
+    sample = SAMPLES.get(sample_id)
+    if sample is None or sample["detections"] is None:
+        raise HTTPException(status_code=404, detail="Sample not found or not classified yet")
+
+    return {
+        "sample_id": sample_id,
+        "marker_gene": sample["marker_gene"],
+        "confidence_threshold": UNMATCHED_CONFIDENCE_THRESHOLD,
+        "unmatched": sample.get("unmatched", []),
+        "note": f"reads with top-call confidence below {UNMATCHED_CONFIDENCE_THRESHOLD:.0%} are shown here instead of being force-assigned a species",
+    }
+
+
+@app.get("/samples/{sample_id}/reads")
+async def get_sample_reads(sample_id: int):
+    """
+    Real raw reads for this sample, grouped by the species each was
+    classified as. Used so the frontend can show/export a genuine
+    sequenced read as a species' "eDNA barcode sequence" instead of a
+    fabricated one (previously generated by hashing the species name).
+    """
+    sample = SAMPLES.get(sample_id)
+    if sample is None or sample["detections"] is None:
+        raise HTTPException(status_code=404, detail="Sample not found or not classified yet")
+
+    return {"sample_id": sample_id, "reads_by_species": sample.get("reads_by_species", {})}
 
 
 @app.get("/samples/{sample_id}/indices")
