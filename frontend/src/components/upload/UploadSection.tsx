@@ -82,7 +82,7 @@ export default function UploadSection() {
         </p>
         <h3 className="mt-3 font-display text-3xl font-semibold text-glow md:text-4xl">Upload a sample</h3>
         <p className="mx-auto mt-3 max-w-md text-sm text-slate-300/85">
-          Drop in raw eDNA reads and Gravity Falls returns species calls, confidence, conservation flags and
+          Drop in raw eDNA reads and ANVESH returns species calls, confidence, conservation flags and
           biodiversity metrics.
         </p>
       </div>

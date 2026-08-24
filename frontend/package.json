@@ -10,6 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@types/three": "^0.185.4",
     "d3": "^7.9.0",
     "framer-motion": "^11.11.17",
     "gsap": "^3.12.5",
@@ -19,6 +20,7 @@
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
     "recharts": "^2.13.3",
+    "three": "^0.185.1",
     "zustand": "^5.0.1"
   },
   "devDependencies": {

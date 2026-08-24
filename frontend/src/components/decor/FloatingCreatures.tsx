@@ -41,7 +41,7 @@ export const DASHBOARD_CREATURES: CreaturePlacement[] = [
   { kind: "shark", top: "44%", dir: "right", size: 215, opacity: 0.45, roam: "70s", bob: "14s", delay: "-58s" },
   { kind: "octopus", top: "52%", dir: "right", size: 135, opacity: 0.55, roam: "78s", bob: "8.5s", delay: "-22s" },
   { kind: "bluetang", top: "60%", dir: "right", size: 50, opacity: 0.6, roam: "56s", bob: "5.8s", delay: "-15s" },
-  { kind: "turtle", top: "68%", dir: "left", size: 155, opacity: 0.5, roam: "68s", bob: "12s", delay: "-49s" },
+  { kind: "turtle", top: "60%", dir: "left", size: 155, opacity: 0.5, roam: "68s", bob: "12s", delay: "-49s" },
   { kind: "jellyfish", top: "76%", dir: "right", size: 88, opacity: 0.55, roam: "86s", bob: "8s", delay: "-12s" },
   { kind: "manta", top: "84%", dir: "right", size: 185, opacity: 0.48, roam: "74s", bob: "13.5s", delay: "-38s" },
   { kind: "clownfish", top: "92%", dir: "left", size: 56, opacity: 0.6, roam: "50s", bob: "4.8s", delay: "-24s" },

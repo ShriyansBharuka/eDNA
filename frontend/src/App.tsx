@@ -10,7 +10,6 @@ import DiscoveredReads from "./components/dashboard/DiscoveredReads";
 import FloatingCreatures from "./components/decor/FloatingCreatures";
 import RisingBubbles from "./components/decor/RisingBubbles";
 import JellyfishLayer from "./components/decor/JellyfishLayer";
-import DeepSeaCreature from "./components/decor/DeepSeaCreature";
 import Credits from "./components/layout/Credits";
 import AuthModal from "./components/modals/AuthModal";
 import IucnDrawer from "./components/modals/IucnDrawer";
@@ -84,9 +83,6 @@ export default function App() {
         {/* Hydrodynamically Accurate Translucent Jellyfish Layer */}
         <JellyfishLayer />
 
-        {/* Deep-Sea Cruising Sea Turtle */}
-        <DeepSeaCreature />
-
         {/* Full Uncut User Uploaded Background Layer (Spans lower dashboard & footer at z-0) */}
         <div aria-hidden className="pointer-events-none absolute bottom-0 inset-x-0 z-0 h-[1250px] md:h-[1500px] overflow-hidden">
           {/* Multi-Stop Extended Top Gradient Blend (Guarantees zero visible seam/line) */}
@@ -114,9 +110,9 @@ export default function App() {
           <section id="species" className="scroll-mt-28">
             <SpeciesList />
           </section>
-          <IndexCards />
-          <DiscoveredReads />
           <GeographicMap />
+          <DiscoveredReads />
+          <IndexCards />
           <SimilarityMap />
         </main>
 

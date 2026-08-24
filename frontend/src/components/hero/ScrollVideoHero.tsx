@@ -94,18 +94,10 @@ export default function ScrollVideoHero() {
 
       {/* Hero Title */}
       <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center text-center px-6 pointer-events-none z-30">
-        <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight text-glow">Gravity Falls</h1>
+        <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight text-glow">ANVESH</h1>
         <p className="mt-3 max-w-xl text-slate-300/90 text-sm md:text-base">
-          eDNA marine species intelligence — scroll to descend.
+          eDNA marine species intelligence.
         </p>
-      </div>
-
-      {/* Scroll Indicator */}
-      <div className="absolute inset-x-0 bottom-10 flex flex-col items-center gap-2 text-slate-300/80 z-30 pointer-events-none">
-        <span className="text-xs uppercase tracking-[0.3em]">Scroll to dive in</span>
-        <span className="h-8 w-5 rounded-full border border-slate-400/50 flex items-start justify-center p-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-glow-400 animate-drift" />
-        </span>
       </div>
     </section>
   );

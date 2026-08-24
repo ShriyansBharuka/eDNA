@@ -116,7 +116,7 @@ export default function Credits() {
         {/* Team Credit */}
         <div className="mt-8 pt-6 border-t border-white/10 text-center">
           <p className="text-xs font-medium tracking-wider text-cyan-300/90 uppercase text-glow">
-            Created by team <span className="font-bold text-sky-200">Gravity Falls</span>
+            Created by team <span className="font-bold text-sky-200">ANVESH</span>
           </p>
         </div>
       </div>
