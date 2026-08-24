@@ -63,9 +63,16 @@ export default function UploadSection() {
       });
       if (results.detections[0]) selectSpecies(results.detections[0].species);
       setPhase("done");
-      requestAnimationFrame(() => {
+      // selectSpecies() above auto-opens the 3D DNA helix panel, which
+      // mounts a whole WebGL scene synchronously in its own effect right
+      // after this render — that (plus the map/similarity fetches this
+      // same store update kicks off elsewhere) was enough main-thread work
+      // still in flight that a same-frame requestAnimationFrame scroll call
+      // never visibly moved the page at all. A short delay lets that settle
+      // before we scroll.
+      setTimeout(() => {
         document.getElementById("species")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      }, 150);
     } catch (err) {
       setPhase("error");
       setError(err instanceof Error ? err.message : "Upload failed");

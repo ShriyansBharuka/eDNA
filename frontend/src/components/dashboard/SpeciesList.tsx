@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "../../store/useAppStore";
 import ConfidenceBadge from "../ui/ConfidenceBadge";
@@ -13,12 +14,18 @@ import {
 } from "../../lib/bioinformatics";
 import DnaHelix3D from "./DnaHelix3D";
 
+const PAGE_SIZE = 10;
+
 export default function SpeciesList() {
   const detections = useAppStore((s) => s.detections);
   const selectedSpecies = useAppStore((s) => s.selectedSpecies);
   const selectSpecies = useAppStore((s) => s.selectSpecies);
   const setScientificModalDetection = useAppStore((s) => s.setScientificModalDetection);
   const readsBySpecies = useAppStore((s) => s.readsBySpecies);
+  const [showAll, setShowAll] = useState(false);
+
+  const visibleDetections = showAll ? detections : detections.slice(0, PAGE_SIZE);
+  const hiddenCount = detections.length - visibleDetections.length;
 
   const activeDetection = detections.find((d) => d.species === selectedSpecies) || null;
   const activeBioDetails = activeDetection
@@ -79,7 +86,7 @@ export default function SpeciesList() {
               </p>
             ) : (
               <div className="flex flex-col gap-3.5">
-                {detections.map((d) => {
+                {visibleDetections.map((d) => {
                   const active = d.species === selectedSpecies;
                   const iucn = resolveIucnCategory(d.conservation_flag);
                   const bioDetails = getBioinformaticsData(
@@ -189,6 +196,21 @@ export default function SpeciesList() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {detections.length > PAGE_SIZE && (
+              <div className="mt-5 flex flex-col items-center gap-2 pt-4 border-t border-white/10">
+                <p className="text-xs text-slate-400">
+                  Showing {visibleDetections.length} of {detections.length} species
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowAll((v) => !v)}
+                  className="glass glass-hover rounded-full px-5 py-1.5 text-xs font-semibold text-cyan-300 border-cyan-500/30 hover:border-cyan-400 transition-all"
+                >
+                  {showAll ? "Show fewer species" : `Show ${hiddenCount} more species`}
+                </button>
               </div>
             )}
           </GlassPanel>
