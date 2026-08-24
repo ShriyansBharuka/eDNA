@@ -41,6 +41,13 @@ interface AppState {
   setEndangeredOpen: (open: boolean) => void;
   setScientificModalDetection: (d: Detection | null) => void;
   removeDetection: (speciesName: string) => void;
+
+  /** Real GitHub-login session — token is a backend JWT, persisted to
+   * localStorage so a reload doesn't sign the user out. */
+  authToken: string | null;
+  authUser: AuthUser | null;
+  setAuth: (token: string | null, user: AuthUser | null) => void;
+  logout: () => void;
 }
 
 export interface MapFocus {
@@ -48,6 +55,15 @@ export interface MapFocus {
   lon: number;
   label: string;
 }
+
+export interface AuthUser {
+  id: number;
+  email: string | null;
+  username: string | null;
+  avatarUrl: string | null;
+}
+
+const AUTH_TOKEN_STORAGE_KEY = "anvesh_auth_token";
 
 export const useAppStore = create<AppState>((set) => ({
   heroDone: false,
@@ -88,4 +104,18 @@ export const useAppStore = create<AppState>((set) => ({
       detections: state.detections.filter((d) => d.species.toLowerCase() !== speciesName.toLowerCase()),
       selectedSpecies: state.selectedSpecies?.toLowerCase() === speciesName.toLowerCase() ? null : state.selectedSpecies,
     })),
+
+  // Read once at store creation (module load), not per-render — fine for a
+  // plain SPA with no SSR concerns here.
+  authToken: localStorage.getItem(AUTH_TOKEN_STORAGE_KEY),
+  authUser: null,
+  setAuth: (token, user) => {
+    if (token) localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+    else localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    set({ authToken: token, authUser: user });
+  },
+  logout: () => {
+    localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    set({ authToken: null, authUser: null });
+  },
 }));

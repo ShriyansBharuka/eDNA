@@ -23,6 +23,7 @@ export default function UploadSection() {
   const setDiscovered = useAppStore((s) => s.setDiscovered);
   const selectSpecies = useAppStore((s) => s.selectSpecies);
   const setSampleLocation = useAppStore((s) => s.setSampleLocation);
+  const authToken = useAppStore((s) => s.authToken);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -44,7 +45,7 @@ export default function UploadSection() {
     setError(null);
     try {
       setPhase("uploading");
-      const uploaded = await uploadSample(file, markerGene);
+      const uploaded = await uploadSample(file, markerGene, authToken);
       setPhase("classifying");
       await classifySample(uploaded.sample_id);
       const [results, indices, reads, discovered] = await Promise.all([

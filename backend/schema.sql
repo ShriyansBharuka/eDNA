@@ -1,10 +1,18 @@
 -- AquaVigil database schema — the four tables from the architecture doc,
 -- plus users for authentication.
 
+-- email/password_hash are nullable now: GitHub-login users (github_id set)
+-- never get a password, and GitHub doesn't always expose an email either.
+-- Existing databases from before GitHub login won't pick up the new
+-- columns from this CREATE TABLE (SQLite doesn't retroactively ALTER on
+-- IF NOT EXISTS) — see the migration in backend/main.py's init_db().
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
+    email TEXT UNIQUE,
+    password_hash TEXT,
+    github_id INTEGER UNIQUE,
+    github_username TEXT,
+    avatar_url TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 

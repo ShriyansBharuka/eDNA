@@ -6,6 +6,7 @@ import type {
   IndicesResponse,
   LiveSimilarityResponse,
   MarkerGene,
+  MeResponse,
   ResultsResponse,
   SampleReadsResponse,
   SimilarityResponse,
@@ -37,11 +38,34 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function uploadSample(file: File, markerGene: MarkerGene): Promise<UploadSampleResponse> {
+export async function uploadSample(
+  file: File,
+  markerGene: MarkerGene,
+  authToken?: string | null
+): Promise<UploadSampleResponse> {
   const form = new FormData();
   form.append("file", file);
   form.append("marker_gene", markerGene);
-  return request<UploadSampleResponse>("/samples/upload", { method: "POST", body: form });
+  return request<UploadSampleResponse>("/samples/upload", {
+    method: "POST",
+    body: form,
+    // Optional — the backend accepts anonymous uploads either way (see
+    // get_optional_user), but attaching the token when a user is logged in
+    // is what makes /samples/mine eventually mean anything for them.
+    headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+  });
+}
+
+// GitHub OAuth is a full-page redirect, not a fetch — the browser needs to
+// actually leave the app and land on github.com, so this just builds the
+// URL for a plain <a href> / window.location.href, unlike every other
+// function here.
+export function githubLoginUrl(): string {
+  return `${BASE}/auth/github/login`;
+}
+
+export function getMe(authToken: string): Promise<MeResponse> {
+  return request<MeResponse>("/auth/me", { headers: { Authorization: `Bearer ${authToken}` } });
 }
 
 export function classifySample(sampleId: number): Promise<ClassifySampleResponse> {

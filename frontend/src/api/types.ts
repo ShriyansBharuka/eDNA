@@ -98,3 +98,10 @@ export interface DiscoveredResponse {
 }
 
 export type MarkerGene = "12S" | "16S" | "COI";
+
+export interface MeResponse {
+  id: number;
+  email: string | null;
+  username: string | null;
+  avatar_url: string | null;
+}

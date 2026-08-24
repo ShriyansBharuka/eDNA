@@ -6,6 +6,8 @@ export default function Navbar() {
   const setAuthOpen = useAppStore((s) => s.setAuthOpen);
   const setIucnOpen = useAppStore((s) => s.setIucnOpen);
   const setEndangeredOpen = useAppStore((s) => s.setEndangeredOpen);
+  const authUser = useAppStore((s) => s.authUser);
+  const logout = useAppStore((s) => s.logout);
 
   return (
     <motion.header
@@ -59,12 +61,27 @@ export default function Navbar() {
           >
             Upload Sample
           </a>
-          <button
-            onClick={() => setAuthOpen(true)}
-            className="glass glass-hover rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium text-slate-100"
-          >
-            Login / Signup
-          </button>
+          {authUser ? (
+            <button
+              onClick={logout}
+              title="Log out"
+              className="glass glass-hover flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-xs sm:text-sm font-medium text-slate-100"
+            >
+              {authUser.avatarUrl ? (
+                <img src={authUser.avatarUrl} alt="" className="h-6 w-6 rounded-full" />
+              ) : (
+                <span className="h-6 w-6 rounded-full bg-cyan-500/30" />
+              )}
+              {authUser.username ?? authUser.email ?? "Account"}
+            </button>
+          ) : (
+            <button
+              onClick={() => setAuthOpen(true)}
+              className="glass glass-hover rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium text-slate-100"
+            >
+              Login / Signup
+            </button>
+          )}
         </div>
       </nav>
     </motion.header>

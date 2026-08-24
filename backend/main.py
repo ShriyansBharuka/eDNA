@@ -1,11 +1,20 @@
 import os
+import secrets
 import sys
 import sqlite3
 from collections import Counter, defaultdict
+from urllib.parse import quote
 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr
+
+# Loads backend/.env if present (GITHUB_CLIENT_ID etc.) — a no-op if it
+# doesn't exist, so this is safe in prod where real env vars are set
+# directly (Render) instead of via a committed/local .env file.
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "data", "component_6"))
 sys.path.append(os.path.dirname(__file__))
@@ -19,7 +28,11 @@ from classifier import classify_reads  # noqa: E402
 from reads_io import parse_reads  # noqa: E402
 from similarity import get_similarity  # noqa: E402
 from embedding import live_similarity  # noqa: E402
-from auth import create_user, authenticate_user, create_token, get_current_user, get_optional_user  # noqa: E402
+from auth import (  # noqa: E402
+    create_user, authenticate_user, create_token, get_current_user, get_optional_user,
+    github_oauth_configured, build_github_authorize_url, exchange_github_code,
+    fetch_github_profile, find_or_create_github_user, get_user_by_id, FRONTEND_URL,
+)
 
 app = FastAPI(title="AquaVigil API", version="0.6.0")
 
@@ -113,6 +126,23 @@ def init_db():
     conn = get_db()
     with open(SCHEMA_PATH) as f:
         conn.executescript(f.read())
+
+    # CREATE TABLE IF NOT EXISTS above only applies to a fresh database — an
+    # aquavigil.db from before GitHub login won't retroactively pick up
+    # these columns, so add them by hand. SQLite has no "ADD COLUMN IF NOT
+    # EXISTS", so this just ignores "duplicate column" on every run after
+    # the first; that's the standard pragmatic migration pattern for SQLite.
+    for statement in (
+        "ALTER TABLE users ADD COLUMN github_id INTEGER UNIQUE",
+        "ALTER TABLE users ADD COLUMN github_username TEXT",
+        "ALTER TABLE users ADD COLUMN avatar_url TEXT",
+    ):
+        try:
+            conn.execute(statement)
+        except sqlite3.OperationalError as e:
+            if "duplicate column" not in str(e).lower():
+                raise
+
     conn.commit()
     conn.close()
 
@@ -186,6 +216,63 @@ async def login(payload: LoginRequest):
 
     token = create_token(user["id"], user["email"])
     return {"user": user, "token": token}
+
+
+# In-memory CSRF state store for the GitHub OAuth handshake — a set of
+# one-time-use tokens minted by /auth/github/login and consumed by the
+# callback below. In-memory is fine here for the same reason SAMPLES is:
+# this backend already has no durable session state across restarts.
+_oauth_states: set[str] = set()
+
+
+@app.get("/auth/github/login")
+async def github_login():
+    """Redirects the browser to GitHub's own authorize page. The frontend
+    triggers this with a full-page navigation (not fetch) since the whole
+    point is to leave the app and come back."""
+    if not github_oauth_configured():
+        raise HTTPException(
+            status_code=500,
+            detail="GitHub login isn't configured — set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET "
+            "(see backend/auth.py for the full env var list and what to register on GitHub).",
+        )
+    state = secrets.token_urlsafe(24)
+    _oauth_states.add(state)
+    return RedirectResponse(build_github_authorize_url(state))
+
+
+@app.get("/auth/github/callback")
+async def github_callback(code: str, state: str):
+    """GitHub redirects here after the user approves (or denies) access.
+    Either way this ends in a redirect back to the frontend — errors go out
+    as an `auth_error` query param rather than an API-style error response,
+    since there's no frontend JS listening for a fetch response at this
+    point, only the browser's own navigation."""
+    if state not in _oauth_states:
+        return RedirectResponse(f"{FRONTEND_URL}/?auth_error={quote('Login expired or was tampered with — try again')}")
+    _oauth_states.discard(state)
+
+    try:
+        access_token = exchange_github_code(code)
+        profile = fetch_github_profile(access_token)
+        user = find_or_create_github_user(profile)
+    except Exception as e:  # noqa: BLE001 — surfaced to the user either way, catch-all is intentional here
+        return RedirectResponse(f"{FRONTEND_URL}/?auth_error={quote(str(e))}")
+
+    token = create_token(user["id"], user["email"])
+    return RedirectResponse(f"{FRONTEND_URL}/?auth_token={token}")
+
+
+@app.get("/auth/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    """Full current profile (username, avatar) for a logged-in session —
+    the JWT payload itself only carries user_id/email, so the frontend
+    calls this once after picking up a token to actually render who's
+    logged in."""
+    user = get_user_by_id(current_user["user_id"])
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @app.post("/samples/upload")

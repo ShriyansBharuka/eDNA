@@ -16,7 +16,7 @@ import IucnDrawer from "./components/modals/IucnDrawer";
 import EndangeredModal from "./components/modals/EndangeredModal";
 import LiveStatusWidget from "./components/decor/LiveStatusWidget";
 import ScientificModal from "./components/modals/ScientificModal";
-import { getDiscovered, getIndices, getResults, getSampleReads } from "./api/client";
+import { getDiscovered, getIndices, getMe, getResults, getSampleReads } from "./api/client";
 import { useAppStore } from "./store/useAppStore";
 
 // Demo sample shown on first load so the dashboard isn't a wall of empty
@@ -29,6 +29,8 @@ export default function App() {
   const setReadsBySpecies = useAppStore((s) => s.setReadsBySpecies);
   const setDiscovered = useAppStore((s) => s.setDiscovered);
   const selectSpecies = useAppStore((s) => s.selectSpecies);
+  const authToken = useAppStore((s) => s.authToken);
+  const setAuth = useAppStore((s) => s.setAuth);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +55,40 @@ export default function App() {
       cancelled = true;
     };
   }, [setSampleResults, setReadsBySpecies, setDiscovered, selectSpecies]);
+
+  // Picks up a fresh session two ways: (1) `?auth_token=...` — the GitHub
+  // OAuth callback in backend/main.py redirects here with one after a
+  // successful login, or `?auth_error=...` if the user cancelled or GitHub
+  // rejected it; (2) a token already in localStorage from a previous visit
+  // (see useAppStore's authToken init) just needs its profile re-fetched,
+  // since only the token itself survives a reload, not the user object.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromRedirect = params.get("auth_token");
+    const authError = params.get("auth_error");
+
+    if (tokenFromRedirect || authError) {
+      params.delete("auth_token");
+      params.delete("auth_error");
+      const rest = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (rest ? `?${rest}` : ""));
+    }
+
+    if (authError) {
+      console.error("GitHub login failed:", authError);
+      return;
+    }
+
+    const token = tokenFromRedirect ?? authToken;
+    if (!token) return;
+
+    getMe(token)
+      .then((me) => setAuth(token, { id: me.id, email: me.email, username: me.username, avatarUrl: me.avatar_url }))
+      .catch(() => setAuth(null, null)); // stale/invalid token — drop it rather than stay half-logged-in
+    // Only ever needs to run once per token change (redirect landing, or
+    // the one stored token found on first mount) — not on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div id="top" className="relative">

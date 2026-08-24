@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import GlassPanel from "../ui/GlassPanel";
+
+const PAGE_SIZE = 10;
 
 function MarkerPin() {
   return (
@@ -16,6 +19,10 @@ export default function DiscoveredReads() {
   const focusOnMap = useAppStore((s) => s.focusOnMap);
   const mapFocus = useAppStore((s) => s.mapFocus);
   const sampleLocation = useAppStore((s) => s.sampleLocation);
+  const [showAll, setShowAll] = useState(false);
+
+  const visibleDiscovered = showAll ? discovered : discovered.slice(0, PAGE_SIZE);
+  const hiddenCount = discovered.length - visibleDiscovered.length;
 
   // There's no per-read GPS in eDNA data, only a per-SAMPLE collection
   // point — so unlike the old mock (which faked a distinct site per read),
@@ -70,7 +77,7 @@ export default function DiscoveredReads() {
             </div>
 
             <div className="flex flex-col gap-3">
-              {discovered.map((r) => (
+              {visibleDiscovered.map((r) => (
                 <div
                   key={r.nearest_species}
                   className="glass flex flex-col gap-4 rounded-2xl px-5 py-4 md:flex-row md:items-center"
@@ -92,6 +99,21 @@ export default function DiscoveredReads() {
                 </div>
               ))}
             </div>
+
+            {discovered.length > PAGE_SIZE && (
+              <div className="mt-5 flex flex-col items-center gap-2 pt-4 border-t border-white/10">
+                <p className="text-xs text-slate-400">
+                  Showing {visibleDiscovered.length} of {discovered.length} groups
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowAll((v) => !v)}
+                  className="glass glass-hover rounded-full px-5 py-1.5 text-xs font-semibold text-cyan-300 border-cyan-500/30 hover:border-cyan-400 transition-all"
+                >
+                  {showAll ? "Show fewer" : `Show ${hiddenCount} more`}
+                </button>
+              </div>
+            )}
           </>
         )}
       </GlassPanel>
