@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AquaVigil — simulated read generator (fallback, since nf-core/readsimulator
+ANVESH — simulated read generator (fallback, since nf-core/readsimulator
 was skipped for this build).
 
 Fragments real reference sequences from data/reference/*.fasta.gz and adds

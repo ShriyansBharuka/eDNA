@@ -1,4 +1,4 @@
-# AquaVigil
+# ANVESH
 
 An eDNA-based marine species identification system for SIH 2026 (PS SIH25042, Ministry of Earth Sciences) — combines an ensemble classifier router, a custom BarcodeBERT-based deep learning classifier, and a conservation-status-aware dashboard with biodiversity indices and species mapping.
 
@@ -15,7 +15,8 @@ An eDNA-based marine species identification system for SIH 2026 (PS SIH25042, Mi
 | Leena | Frontend (dashboard, geographic map, similarity map UI) |
 | Aarav | Conservation data research (IUCN/Wildlife Act), quantum research thread, documentation |
 
-Full breakdown of what each of those actually involves — concrete task checklists, tools needed, and how your output hands off to the next person — is in [`docs/task-breakdown.md`](docs/task-breakdown.md) and [`docs/roadmap.md`](docs/roadmap.md). Read your row, then open those docs for the specifics.
+For how the system actually fits together end to end, see
+[`docs/full-pipeline-walkthrough.md`](docs/full-pipeline-walkthrough.md).
 
 ## What's in this repo right now
 
@@ -34,7 +35,8 @@ Full breakdown of what each of those actually involves — concrete task checkli
 - `scripts/simulate_reads.py` + `simulated_data/` — the simulated training/test dataset (reads + ground-truth manifest) that both trained models were built and evaluated against, and that seeds the dashboard's demo state on backend startup.
 - `frontend/` — the full dashboard UI: scroll-driven video hero, real upload flow, species list with real confidence/conservation styling, real biodiversity assessment, a "Discovered" panel (still mock — see below), a distribution map (mock points, real OpenStreetMap tiles), and a real genetic similarity map.
 - `render.yaml` — Render Blueprint for one-click backend deploy. See [Deployment](#deployment).
-- `docs/architecture.md` / `task-breakdown.md` / `roadmap.md` — system design, per-component build breakdown, and phase-by-phase plan.
+- `docs/architecture.md` / `pipeline.md` / `full-pipeline-walkthrough.md` — system design, and a full end-to-end walkthrough of what actually runs.
+- `docs/paper/` — the IEEE research paper written up from this project's findings.
 
 ## Running the backend
 
@@ -54,7 +56,7 @@ npm install
 npm run dev
 ```
 
-Then visit `http://localhost:5173`. It proxies `/api/*` to the backend on `:8000` in dev, so run that alongside it for real data — otherwise the dashboard just falls back to its empty state. Note the on-page branding currently reads "Gravity Falls" (a frontend-only display choice); the project and repo are still AquaVigil everywhere else.
+Then visit `http://localhost:5173`. It proxies `/api/*` to the backend on `:8000` in dev, so run that alongside it for real data — otherwise the dashboard just falls back to its empty state.
 
 ## Deployment
 
@@ -101,3 +103,12 @@ Backend CORS is already wide open (`allow_origins=["*"]`) since there's no cooki
 ## Notes on stub vs. real
 
 Most of `backend/main.py`'s routes now run real logic — see the checklist above for exactly which ones. `/species/{name}/distribution` is the one still returning hardcoded placeholder points; its response still carries a `"note"` field saying so. That convention — a `"note"` naming what's still placeholder — is worth keeping wherever a route isn't fully real yet, so nobody mistakes stub data for something real without needing to ask.
+
+## License
+
+Source code is MIT licensed — see [`LICENSE`](LICENSE).
+
+The MIT license covers the code only. Reference sequence data, trained model
+checkpoints, and image/video assets carry separate upstream terms and
+attribution requirements — see
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) before redistributing.

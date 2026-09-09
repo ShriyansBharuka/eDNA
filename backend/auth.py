@@ -1,11 +1,11 @@
 """
-Authentication for AquaVigil.
+Authentication for ANVESH.
 
 Handles GitHub OAuth (the live login path — see AuthModal on the frontend),
 plus legacy email/password signup/login (real, tested, but no longer wired
 to the frontend UI; kept working in case something still calls it directly),
 and JWT token creation/verification shared by both. Uses SQLite (the same
-aquavigil.db everything else uses) for the users table.
+anvesh.db everything else uses) for the users table.
 
 Login is optional app-wide: guests can use the app fully (samples just have
 no owner), but a logged-in user's samples are tied to their account so
@@ -29,13 +29,18 @@ from passlib.context import CryptContext
 # that survive a restart; without it, we generate a random one per process
 # start, which just means existing sessions get invalidated on restart —
 # no worse than what the ephemeral SQLite/in-memory sample store already do.
+#
+# The AQUAVIGIL_ prefix is deliberate and predates the rename to ANVESH —
+# it's the name already set in the Render environment, and renaming it here
+# without renaming it there would silently fall back to a per-restart random
+# key. Leave it alone unless you change the Render env var in the same pass.
 SECRET_KEY = os.environ.get("AQUAVIGIL_SECRET_KEY") or secrets.token_hex(32)
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = 24
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "aquavigil.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "anvesh.db")
 
 # --- GitHub OAuth ---
 # Register an OAuth App at https://github.com/settings/developers with its

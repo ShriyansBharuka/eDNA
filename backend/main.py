@@ -34,7 +34,7 @@ from auth import (  # noqa: E402
     fetch_github_profile, find_or_create_github_user, get_user_by_id, FRONTEND_URL,
 )
 
-app = FastAPI(title="AquaVigil API", version="0.6.0")
+app = FastAPI(title="ANVESH API", version="0.6.0")
 
 # Hosted frontend (Vercel) and backend (Render) live on different origins.
 # No cookies/session credentials are used anywhere in this API, so a fully
@@ -46,7 +46,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-DB_PATH = os.path.join(os.path.dirname(__file__), "aquavigil.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "anvesh.db")
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 SEED_FASTQ_PATH = os.path.join(os.path.dirname(__file__), "..", "simulated_data", "simulated_reads.fastq")
 
@@ -128,7 +128,7 @@ def init_db():
         conn.executescript(f.read())
 
     # CREATE TABLE IF NOT EXISTS above only applies to a fresh database — an
-    # aquavigil.db from before GitHub login won't retroactively pick up
+    # anvesh.db from before GitHub login won't retroactively pick up
     # these columns, so add them by hand. SQLite has no "ADD COLUMN IF NOT
     # EXISTS", so this just ignores "duplicate column" on every run after
     # the first; that's the standard pragmatic migration pattern for SQLite.

@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "purpose": "Cached IUCN Red List + CITES/WPA status for AquaVigil demo species set.",
+    "purpose": "Cached IUCN Red List + CITES/WPA status for ANVESH demo species set.",
     "why_cached": "IUCN API registration has lead time and the demo must not depend on a live external call. This file IS the conservation_status table content.",
     "iucn_categories": {
       "EX": "Extinct",
@@ -15,7 +15,8 @@
     },
     "flag_trigger_categories": ["CR", "EN", "VU"],
     "last_manually_verified": "2026-08-22",
-    "sources": "IUCN Red List (redlist.org), CITES appendices, Wildlife Protection Act 1972 (as amended 2022) Schedule I/II/IV where applicable to Indian waters"
+    "sources": "IUCN Red List (redlist.org), CITES appendices, Wildlife Protection Act 1972 (as amended 2022) Schedule I/II/IV where applicable to Indian waters",
+    "demo_additions_2026_08_24": "Of the original 18 species above, only Carcharhinus longimanus is actually in the live classifier's 500-species vocabulary (models/transformer/checkpoints/label_mapping.json) — the rest (whale shark, sea turtles, dugong, etc.) can never actually be predicted by the live model, so they can never really flag in a demo. The 3 entries appended at the end of this list (marked 'added for the demo dataset') were cross-checked against label_mapping.json specifically so a live upload can trigger real flags — see scripts/make_demo_dataset.py. Their IUCN categories were filled in from general/training knowledge, NOT a fresh redlist.org lookup like the original 18 — spot-check them on redlist.org before citing the exact category in a judged presentation. The species and the fact that they're real, trainable, threatened taxa is solid either way."
   },
   "species": [
     {
@@ -161,6 +162,30 @@
       "cites_appendix": null,
       "wpa_schedule": null,
       "notes": "Control species"
+    },
+    {
+      "scientific_name": "Somniosus microcephalus",
+      "common_name": "Greenland shark",
+      "iucn_category": "VU",
+      "cites_appendix": null,
+      "wpa_schedule": null,
+      "notes": "Added for the demo dataset (scripts/make_demo_dataset.py) — one of the classifier's actual 500 trainable species. Extremely long-lived (estimated 300-500 years) and very slow to mature, which is the usual basis for its Vulnerable assessment. Verify current IUCN category before citing it in a judged presentation."
+    },
+    {
+      "scientific_name": "Hippocampus whitei",
+      "common_name": "White's seahorse",
+      "iucn_category": "EN",
+      "cites_appendix": "II",
+      "wpa_schedule": null,
+      "notes": "Added for the demo dataset (scripts/make_demo_dataset.py) — one of the classifier's actual 500 trainable species. All Hippocampus species are CITES Appendix II by genus-wide listing. Was uplisted toward Endangered following steep habitat-driven declines (Sydney Harbour / Port Stephens, Australia). Verify current IUCN category before citing it in a judged presentation."
+    },
+    {
+      "scientific_name": "Urogymnus asperrimus",
+      "common_name": "Porcupine ray",
+      "iucn_category": "VU",
+      "cites_appendix": null,
+      "wpa_schedule": null,
+      "notes": "Added for the demo dataset (scripts/make_demo_dataset.py) — one of the classifier's actual 500 trainable species. Rays as a group are in steep global decline from bycatch. Verify current IUCN category before citing it in a judged presentation."
     }
   ]
 }

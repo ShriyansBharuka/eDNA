@@ -1,4 +1,4 @@
-# AquaVigil — Actual Pipeline, End to End
+# ANVESH — Actual Pipeline, End to End
 
 Written to answer one specific question the team got confused about: **is the Transformer used, or the DL model, or both?** Short answer up front, then the full trace through the real code so there's no ambiguity left. Checked directly against the code on disk as of 2026-08-23 — every file/line reference below was actually read, not recalled from memory.
 
@@ -76,7 +76,7 @@ The `transformer/` folder holding both the real (untrained) Transformer code *an
         │  For EVERY read:                                │
         │   1. Classify the read as given                │
         │   2. Classify its reverse-complement too         │
-        │      (added today — see docs/ppt-notes.md §4.4) │
+        │      (see full-pipeline-walkthrough.md)         │
         │   3. Keep whichever orientation scored higher    │
         │                                                 │
         │  Output: {species, confidence} per read          │
@@ -135,7 +135,7 @@ The `transformer/` folder holding both the real (untrained) Transformer code *an
 - **Trained on**: `simulated_data/manifest.csv` — 161,920 training reads, 20,240 held out for testing.
 - **Real accuracy**: 98.66% on the held-out test set (`models/transformer/results/final_results.json`).
 - **Why this one and not the Transformer**: it's simple, fast (no GPU, sub-millisecond per read), and it's the one that actually got a checkpoint saved. That's it — there's no deeper reason. It happens to be very accurate on data shaped like its training set (see the caveat below).
-- **Known real limitation, found via testing today**: it's a closed-set classifier over exactly 500 species — anything outside that list gets a forced, low-confidence wrong guess. Was also missing reverse-complement robustness until today's fix (see `docs/ppt-notes.md` §4.4) — that part's now fixed.
+- **Known real limitation, found via testing today**: it's a closed-set classifier over exactly 500 species — anything outside that list gets a forced, low-confidence wrong guess. Was also missing reverse-complement robustness until it was fixed (see [`full-pipeline-walkthrough.md`](full-pipeline-walkthrough.md)) — that part's now fixed.
 
 ### B. `kmer_mean_mlp` — the similarity-map model, not a classifier in production
 

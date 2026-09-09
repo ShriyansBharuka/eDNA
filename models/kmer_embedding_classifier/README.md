@@ -4,7 +4,7 @@
 
 `kmer_embedding_classifier`
 
-This is the finalized pure deep-learning taxonomic classification model for the eDNA/AquaVigil project. It predicts species from a DNA sequence using an overlapping k-mer embedding model.
+This is the finalized pure deep-learning taxonomic classification model for the eDNA/ANVESH project. It predicts species from a DNA sequence using an overlapping k-mer embedding model.
 
 ## What It Does
 

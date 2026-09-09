@@ -1,11 +1,21 @@
 __pycache__/
 *.pyc
-aquavigil.db
+*.db
 venv/
 .venv/
 *.log
 node_modules
 frontend/dist/
-frontend/tsconfig.tsbuildinfo
+*.tsbuildinfo
 .env
 backend/.env
+
+# Local tooling / generated caches — not part of the project
+graphify-out/
+.claude/
+
+# Internal team planning — not for the public repo
+docs/task-breakdown.md
+CLAUDE.md
+docs/pitch-qa-prep.md
+docs/ppt-notes.md

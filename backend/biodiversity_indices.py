@@ -45,5 +45,5 @@ if __name__ == "__main__":
     test_skewed = {"Species A": 99, "Species B": 1}
     print("Skewed test (expect low evenness):", calculate_all_indices(test_skewed))
 
-    print("\nReal AquaVigil dataset result:")
+    print("\nReal ANVESH dataset result:")
     print(calculate_all_indices(dict(species_counts)))

@@ -1,5 +1,5 @@
 """
-Conservation Flagging module for AquaVigil.
+Conservation Flagging module for ANVESH.
 
 Reads the pre-cached species_cache.json (built from manual IUCN + CITES/WPA
 research) and returns a flag object for any detected species. No live API

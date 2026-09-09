@@ -1,4 +1,4 @@
--- AquaVigil database schema — the four tables from the architecture doc,
+-- ANVESH database schema — the four tables from the architecture doc,
 -- plus users for authentication.
 
 -- email/password_hash are nullable now: GitHub-login users (github_id set)
