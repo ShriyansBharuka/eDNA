@@ -1,4 +1,4 @@
-# ANVESH (ANVESH) — Complete System Pipeline, Deep Dive
+# ANVESH — Complete System Pipeline, Deep Dive
 
 > Written for anyone joining the team who needs to understand **everything** —
 > not just "what does it do" but "which file, which function, which line
@@ -6,11 +6,6 @@
 > the code on disk, not recalled from memory or the pitch deck. Where
 > something is a stub, mock, or not-yet-wired, that is stated explicitly —
 > nothing here is rounded up to sound more finished than it is.
->
-> Project naming note: the repo, backend title, and database file are still
-> **ANVESH** everywhere. **ANVESH** is the on-page display name shown in
-> the frontend (navbar, hero, footer, export filenames) — a branding choice
-> layered on top, not a renamed repo.
 
 ---
 
