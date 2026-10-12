@@ -178,8 +178,9 @@ into Overleaf.
 
 ## Contributors
 
-Shriyans Bharuka · Aarya Burande · Darshan Mahale · Aarav Nambiar ·
-Sunanda Pandit · Leena Madavi
+[Shriyans Bharuka](https://www.linkedin.com/in/shriyans-bharuka/ ) · [Aarya Burande](https://www.linkedin.com/in/aarya-burande-1011a0397/ ) · [Darshan Mahale](https://www.linkedin.com/in/darshan-mahale-77123a311/ ) · [Aarav Nambiar](https://www.linkedin.com/in/aarav-nambiar-a017ab348/ ) ·
+[Sunanda Pandit](https://www.linkedin.com/in/sunanda-pandit-288816302/ ) · [Leena Madavi](https://www.linkedin.com/in/leena-madavi/ )
+
 
 ## License
 
