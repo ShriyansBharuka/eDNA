@@ -85,13 +85,32 @@ export default function GeographicMap() {
       4
     );
 
-    // CartoDB Dark Matter Tile Layer (Matches site dark abyssal aesthetic)
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      maxZoom: 18,
-      subdomains: "abcd",
-    }).addTo(map);
+    // Watermark-free Dark Ocean Canvas (Esri) by default; CartoDB if an API key is provided
+    const cartoKey = import.meta.env.VITE_CARTO_API_KEY;
+    if (cartoKey) {
+      L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${cartoKey}`, {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 18,
+        subdomains: "abcd",
+      }).addTo(map);
+    } else {
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
+          maxZoom: 16,
+        }
+      ).addTo(map);
+
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "",
+          maxZoom: 16,
+        }
+      ).addTo(map);
+    }
 
     // Initial Sample Location Pin
     const sampleMarker = L.marker([sampleLocation.lat, sampleLocation.lon], { icon: sampleIcon })
@@ -204,7 +223,9 @@ export default function GeographicMap() {
         <div ref={mapElRef} className="h-[440px] w-full rounded-2xl overflow-hidden border border-white/10 shadow-inner" />
         <p className="mt-3 text-xs text-slate-400 flex items-center justify-between gap-2 flex-wrap">
           <span>{dataSourceInfo}</span>
-          <span className="text-[11px] text-slate-500">&bull; CartoDB Dark Matter Tiles</span>
+          <span className="text-[11px] text-slate-500">
+            &bull; {import.meta.env.VITE_CARTO_API_KEY ? "CartoDB Dark Matter Tiles" : "Esri Dark Canvas Tiles"}
+          </span>
         </p>
       </GlassPanel>
     </section>

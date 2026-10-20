@@ -94,13 +94,20 @@ export default function EndangeredModal() {
                     key={d.species}
                     className="group relative rounded-2xl border border-white/10 bg-slate-900/80 p-4 transition-all duration-200 hover:border-amber-500/40 hover:bg-slate-900/95 shadow-md flex items-center justify-between gap-3"
                   >
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() => {
                         selectSpecies(d.species);
                         close();
                       }}
-                      className="flex flex-col text-left flex-1 min-w-0"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          selectSpecies(d.species);
+                          close();
+                        }
+                      }}
+                      className="flex flex-col text-left flex-1 min-w-0 cursor-pointer"
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-slate-100 italic truncate group-hover:text-amber-300 transition-colors">
@@ -111,7 +118,7 @@ export default function EndangeredModal() {
                       <p className="text-xs text-slate-400 mt-1">
                         Confidence: <span className="text-amber-300 font-medium">{(d.confidence * 100).toFixed(1)}%</span> &middot; Reads: <span className="text-slate-200">{d.read_count.toLocaleString()}</span>
                       </p>
-                    </button>
+                    </div>
 
                     {/* Delete button for individual removal */}
                     <button
